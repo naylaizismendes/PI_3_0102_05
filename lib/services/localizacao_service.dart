@@ -13,10 +13,6 @@ class LocalizacaoService {
   // permitindo cancelá-lo quando a tela for descartada.
   StreamSubscription<Position>? _posicaoSubscription;
 
-  // ---------------------------------------------------------------------------
-  // Permissão
-  // ---------------------------------------------------------------------------
-
   /// Verifica se o serviço de localização está ativo e se o aplicativo
   /// já possui permissão concedida.
   Future<LocationPermission> verificarPermissao() async {
@@ -47,10 +43,6 @@ class LocalizacaoService {
     return permissao;
   }
 
-  // ---------------------------------------------------------------------------
-  // Captura única
-  // ---------------------------------------------------------------------------
-
   /// Solicita permissão (se necessário) e retorna a posição atual do
   /// dispositivo uma única vez.
   Future<Position> obterPosicaoAtual() async {
@@ -73,10 +65,6 @@ class LocalizacaoService {
 
     return pos;
   }
-
-  // ---------------------------------------------------------------------------
-  // Stream contínuo
-  // ---------------------------------------------------------------------------
 
   /// Inicia o monitoramento contínuo do GPS e imprime cada atualização
   /// no console do desenvolvedor.
@@ -134,10 +122,6 @@ class LocalizacaoService {
     developer.log('Monitoramento GPS encerrado.', name: 'LocalizacaoService');
   }
 
-  // ---------------------------------------------------------------------------
-  // Utilitários
-  // ---------------------------------------------------------------------------
-
   /// Calcula a distância em metros entre duas coordenadas.
   double distanciaEmMetros({
     required double lat1,
@@ -147,10 +131,6 @@ class LocalizacaoService {
   }) {
     return Geolocator.distanceBetween(lat1, lon1, lat2, lon2);
   }
-
-  // ---------------------------------------------------------------------------
-  // Helpers privados
-  // ---------------------------------------------------------------------------
 
   Future<LocationPermission> _garantirPermissao() async {
     final servicoAtivo = await Geolocator.isLocationServiceEnabled();
