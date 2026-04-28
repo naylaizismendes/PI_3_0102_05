@@ -4,8 +4,7 @@ const List<Ambiente> ambientesMock = [
   Ambiente(
     id: 'h15',
     nome: 'H15',
-    descricao: 'Salas de aula e laboratórios.'
-        'Prédio primncipal para aqueles que estudam tecnologias.',
+    descricao: 'Introdução ao jogo. Local das provas teóricas (primeira avaliação e recuperação, se necessário).',
     latitude: -22.83403852745762,
     longitude: -47.05253054507469,
     raioMetros: 25,
@@ -13,36 +12,31 @@ const List<Ambiente> ambientesMock = [
   Ambiente(
     id: 'biblioteca',
     nome: 'Biblioteca',
-    descricao: 'Estantes altas de livros e corredores silenciosos. '
-        'Lugar de estudo e pesquisa.',
+    descricao: 'Local de estudo e pesquisa. Aqui você pode conseguir um livro que concede uma resposta da primeira avaliação.',
     latitude: -22.833647949051585,
     longitude: -47.05195387018311,
     raioMetros: 20,
   ),
   Ambiente(
-    id: 'cta_ba',
-    nome: 'CT/BA',
-    descricao: 'Salas de engenahrias e T.I.'
-        'Prédio para estudos mais avançados.',
+    id: 'cta',
+    nome: 'CTA',
+    descricao: 'Ponto de transição do campus para o recebimento de orientações da jornada.',
     latitude: -22.833175792641924,
     longitude: -47.05262442238137,
     raioMetros: 30,
   ),
   Ambiente(
-    id: 'lab_1',
-    nome: 'Laboratório 1',
-    descricao:
-        'Sala de informática com monitores azuis e componentes de PC espalhados.'
-        'Clima de oficina.',
+    id: 'lab_a',
+    nome: 'Laboratório A CT',
+    descricao: 'Laboratório de hardware. Aqui você imprime o trabalho final e pode conseguir uma resposta da prova final através de um quiz.',
     latitude: -22.83261464126679,
     longitude: -47.052624422410574,
     raioMetros: 30,
   ),
   Ambiente(
-    id: 'lab_2',
-    nome: 'Laboratório 2',
-    descricao:
-        'Ambiente moderno com terminais de programação e diagramas de rede. ',
+    id: 'lab_b',
+    nome: 'Laboratório B CT',
+    descricao: 'Laboratório de software. Aqui você entrega o celular de um NPC e pode obter uma resposta da prova final através de um quiz.',
     latitude: -22.832641833677098,
     longitude: -47.0528980077,
     raioMetros: 35,
@@ -50,8 +44,7 @@ const List<Ambiente> ambientesMock = [
   Ambiente(
     id: 'auditorio',
     nome: 'Auditório',
-    descricao:
-        'Palco imponente com iluminação focada. Clima de julgamento solene. ',
+    descricao: 'Palco da prova final e dos cenários de desfecho.',
     latitude: -22.833144825588214,
     longitude: -47.053164815129875,
     raioMetros: 35,
