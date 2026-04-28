@@ -11,34 +11,34 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('RPG Mobile 2026')),
-      body: Padding(
-        padding: const EdgeInsets.all(24),
+      body: const Padding(
+        padding: EdgeInsets.all(24),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.explore, size: 96, color: Colors.deepPurple),
-            const SizedBox(height: 16),
-            const Text(
+            Icon(Icons.explore, size: 96, color: Colors.deepPurple),
+            SizedBox(height: 16),
+            Text(
               'Bem-vindo, aventureiro!',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 8),
-            const Text(
+            SizedBox(height: 8),
+            Text(
               'Explore o Campus I da PUC-Campinas\ne descubra novos ambientes.',
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 40),
+            SizedBox(height: 40),
             _BotaoMenu(
               icone: Icons.my_location,
               texto: 'Minha Localização',
-              destino: const LocalizacaoScreen(),
+              destino: LocalizacaoScreen(),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12),
             _BotaoMenu(
               icone: Icons.map,
               texto: 'Ambientes do Jogo',
-              destino: const AmbientesScreen(),
+              destino: AmbientesScreen(),
             ),
           ],
         ),

@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>O app precisa da localizacao para o RPG</string>
+	<string>O RPG Mobile usa sua localização para posicionar seu personagem nos ambientes reais do campus. Sem GPS, não é possível jogar.</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>
