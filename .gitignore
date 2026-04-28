@@ -1,3 +1,45 @@
-.dart_tool
-build
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.buildlog/
+.history
+.svn/
+migrate_working_dir/
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# VS Code
+.vscode/settings.json
+.vscode/launch.json
+
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins
 .flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+/build/
+
+# Android Studio
+/android/app/debug
+/android/app/profile
+/android/app/release
+
+# Web
+lib/generated_plugin_registrant.dart
+
+# Pasta de materiais do curso (Material restrito)
+nao-subir/
+PRD.md
+.agents/
