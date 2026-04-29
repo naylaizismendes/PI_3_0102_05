@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../data/ambientes_mock.dart';
 import '../models/ambiente.dart';
+import 'ambiente_detalhe_screen.dart';
 
 class AmbientesScreen extends StatelessWidget {
   const AmbientesScreen({super.key});
@@ -52,19 +53,28 @@ class _AmbienteCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.7),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => AmbienteDetalheScreen(ambiente: ambiente),
           ),
-        ],
-      ),
-      padding: const EdgeInsets.all(20),
+        );
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.7),
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -110,6 +120,7 @@ class _AmbienteCard extends StatelessWidget {
           ),
         ],
       ),
+    ),
     );
   }
 }
