@@ -178,10 +178,35 @@ class _LocalizacaoScreenState extends State<LocalizacaoScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Minha Localização')),
-      body: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Center(child: _construirConteudo()),
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        title: const Text(
+          'Minha Localização',
+          style: TextStyle(color: Color(0xFF4A4E69), fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Color(0xFF4A4E69)),
+      ),
+      body: Container(
+        width: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFFE2F0CB),
+              Color(0xFFFFDAC1),
+              Color(0xFFC7CEEA),
+            ],
+          ),
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Center(child: _construirConteudo()),
+          ),
+        ),
       ),
     );
   }
@@ -193,7 +218,10 @@ class _LocalizacaoScreenState extends State<LocalizacaoScreen> {
         children: [
           CircularProgressIndicator(),
           SizedBox(height: 16),
-          Text('Aguardando permissão e sinal GPS…'),
+          Text(
+            'Aguardando permissão e sinal GPS…',
+            style: TextStyle(color: Color(0xFF4A4E69)),
+          ),
         ],
       );
     }
@@ -215,9 +243,12 @@ class _LocalizacaoScreenState extends State<LocalizacaoScreen> {
     return const Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(Icons.gps_not_fixed, size: 80),
+        Icon(Icons.gps_not_fixed, size: 80, color: Color(0xFF4A4E69)),
         SizedBox(height: 16),
-        Text('Aguardando sinal GPS…'),
+        Text(
+          'Aguardando sinal GPS…',
+          style: TextStyle(color: Color(0xFF4A4E69)),
+        ),
       ],
     );
   }
@@ -233,11 +264,11 @@ class _PosicaoCard extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Icon(Icons.gps_fixed, size: 64, color: Colors.green),
+        const Icon(Icons.gps_fixed, size: 64, color: Color(0xFF2D6A4F)),
         const SizedBox(height: 8),
         const Text(
           'Monitorando continuamente',
-          style: TextStyle(fontSize: 12, color: Colors.green),
+          style: TextStyle(fontSize: 12, color: Color(0xFF2D6A4F), fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 16),
         _linha('Latitude', posicao.latitude.toStringAsFixed(6)),
@@ -246,7 +277,7 @@ class _PosicaoCard extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           'Última atualização: ${_formatarHora(posicao.timestamp)}',
-          style: const TextStyle(fontSize: 12, color: Colors.grey),
+          style: const TextStyle(fontSize: 12, color: Color(0xFF6A6E89)),
         ),
       ],
     );
@@ -256,7 +287,7 @@ class _PosicaoCard extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 4),
         child: Text(
           '$rotulo: $valor',
-          style: const TextStyle(fontSize: 18),
+          style: const TextStyle(fontSize: 18, color: Color(0xFF4A4E69), fontWeight: FontWeight.w600),
         ),
       );
 
@@ -289,7 +320,11 @@ class _MensagemErro extends StatelessWidget {
           color: Colors.red,
         ),
         const SizedBox(height: 16),
-        Text(mensagem, textAlign: TextAlign.center),
+        Text(
+          mensagem,
+          textAlign: TextAlign.center,
+          style: const TextStyle(color: Color(0xFF4A4E69), fontSize: 16, fontWeight: FontWeight.w500),
+        ),
         const SizedBox(height: 24),
         FilledButton.icon(
           icon: Icon(
