@@ -13,7 +13,8 @@ class AmbienteDetalheScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text(
           'Detalhes do Ambiente',
-          style: TextStyle(color: Color(0xFF4A4E69), fontWeight: FontWeight.bold),
+          style:
+              TextStyle(color: Color(0xFF4A4E69), fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -53,13 +54,22 @@ class AmbienteDetalheScreen extends StatelessWidget {
                   padding: const EdgeInsets.all(24),
                   child: Column(
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFFB7B2),
-                          borderRadius: BorderRadius.circular(20),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: Image.asset(
+                          ambiente.imagem,
+                          width: 120,
+                          height: 120,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) =>
+                              Container(
+                            width: 120,
+                            height: 120,
+                            color: const Color(0xFFFFB7B2),
+                            child: const Icon(Icons.location_city_rounded,
+                                size: 60, color: Color(0xFF9D0208)),
+                          ),
                         ),
-                        child: const Icon(Icons.location_city_rounded, size: 80, color: Color(0xFF9D0208)),
                       ),
                       const SizedBox(height: 24),
                       Text(
@@ -74,12 +84,16 @@ class AmbienteDetalheScreen extends StatelessWidget {
                       const SizedBox(height: 16),
                       Text(
                         ambiente.descricao,
-                        style: const TextStyle(fontSize: 16, color: Color(0xFF6A6E89), height: 1.5),
+                        style: const TextStyle(
+                            fontSize: 16,
+                            color: Color(0xFF6A6E89),
+                            height: 1.5),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 24),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 12),
                         decoration: BoxDecoration(
                           color: Colors.white.withOpacity(0.5),
                           borderRadius: BorderRadius.circular(12),
@@ -88,17 +102,26 @@ class AmbienteDetalheScreen extends StatelessWidget {
                           children: [
                             Text(
                               '📍 Latitude: ${ambiente.latitude.toStringAsFixed(5)}',
-                              style: const TextStyle(fontSize: 14, color: Color(0xFF4A4E69), fontWeight: FontWeight.w600),
+                              style: const TextStyle(
+                                  fontSize: 14,
+                                  color: Color(0xFF4A4E69),
+                                  fontWeight: FontWeight.w600),
                             ),
                             const SizedBox(height: 4),
                             Text(
                               '📍 Longitude: ${ambiente.longitude.toStringAsFixed(5)}',
-                              style: const TextStyle(fontSize: 14, color: Color(0xFF4A4E69), fontWeight: FontWeight.w600),
+                              style: const TextStyle(
+                                  fontSize: 14,
+                                  color: Color(0xFF4A4E69),
+                                  fontWeight: FontWeight.w600),
                             ),
                             const SizedBox(height: 4),
                             Text(
                               '📏 Raio de interação: ${ambiente.raioMetros.toStringAsFixed(0)}m',
-                              style: const TextStyle(fontSize: 14, color: Color(0xFF4A4E69), fontWeight: FontWeight.w600),
+                              style: const TextStyle(
+                                  fontSize: 14,
+                                  color: Color(0xFF4A4E69),
+                                  fontWeight: FontWeight.w600),
                             ),
                           ],
                         ),

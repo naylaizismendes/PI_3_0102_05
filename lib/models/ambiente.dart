@@ -1,7 +1,3 @@
-/// Representa um ambiente do RPG mapeado para uma localização real do campus.
-///
-/// Cada ambiente possui coordenadas (lat/long) e um raio de ativação em metros.
-/// O jogador "entra" no ambiente quando sua posição está dentro desse raio.
 class Ambiente {
   final String id;
   final String nome;
@@ -10,6 +6,7 @@ class Ambiente {
   final double longitude;
   final double raioMetros;
   final bool desbloqueado;
+  final String imagem;
 
   const Ambiente({
     required this.id,
@@ -18,6 +15,20 @@ class Ambiente {
     required this.latitude,
     required this.longitude,
     required this.raioMetros,
+    required this.imagem,
     this.desbloqueado = false,
   });
+
+  factory Ambiente.fromJson(Map<String, dynamic> json) {
+    return Ambiente(
+      id: json['id'],
+      nome: json['nome'],
+      descricao: json['descricao'],
+      latitude: json['latitude'],
+      longitude: json['longitude'],
+      raioMetros: (json['raioMetros'] as num).toDouble(),
+      imagem: json['imagem'] ?? 'assets/images/player_icon.png',
+      desbloqueado: json['desbloqueado'] ?? false,
+    );
+  }
 }

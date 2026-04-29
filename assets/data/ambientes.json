@@ -1,0 +1,56 @@
+[
+  {
+    "id": "h15",
+    "nome": "H15",
+    "descricao": "Introdução ao jogo. Local das provas teóricas (primeira avaliação e recuperação, se necessário).",
+    "latitude": -22.83403852745762,
+    "longitude": -47.05253054507469,
+    "raioMetros": 10,
+    "imagem": "assets/images/ambients/h15-1.png"
+  },
+  {
+    "id": "biblioteca",
+    "nome": "Biblioteca",
+    "descricao": "Local de estudo e pesquisa. Aqui você pode conseguir um livro que concede uma resposta da primeira avaliação.",
+    "latitude": -22.833647949051585,
+    "longitude": -47.05195387018311,
+    "raioMetros": 8,
+    "imagem": "assets/images/ambients/biblioteca.png"
+  },
+  {
+    "id": "cta",
+    "nome": "CTA",
+    "descricao": "Ponto de transição do campus para o recebimento de orientações da jornada.",
+    "latitude": -22.833175792641924,
+    "longitude": -47.05262442238137,
+    "raioMetros": 5,
+    "imagem": "assets/images/ambients/CTA.png"
+  },
+  {
+    "id": "lab_a",
+    "nome": "Laboratório A CT",
+    "descricao": "Laboratório de hardware. Aqui você imprime o trabalho final e pode conseguir uma resposta da prova final através de um quiz.",
+    "latitude": -22.83261464126679,
+    "longitude": -47.052624422410574,
+    "raioMetros": 3,
+    "imagem": "assets/images/ambients/lab a.png"
+  },
+  {
+    "id": "lab_b",
+    "nome": "Laboratório B CT",
+    "descricao": "Laboratório de software. Aqui você entrega o celular de um NPC e pode obter uma resposta da prova final através de um quiz.",
+    "latitude": -22.832641833677098,
+    "longitude": -47.0528980077,
+    "raioMetros": 3,
+    "imagem": "assets/images/ambients/lab b.png"
+  },
+  {
+    "id": "auditorio",
+    "nome": "Auditório",
+    "descricao": "Palco da prova final e dos cenários de desfecho.",
+    "latitude": -22.833144825588214,
+    "longitude": -47.053164815129875,
+    "raioMetros": 10,
+    "imagem": "assets/images/ambients/auditorio.png"
+  }
+]
