@@ -1,9 +1,22 @@
 import 'package:flutter/material.dart';
 import 'localizacao_screen.dart';
 import 'ambientes_screen.dart';
+import 'campanha_screen.dart';
+import '../services/audio_service.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    AudioService().playMenuBgm();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,15 +36,15 @@ class HomeScreen extends StatelessWidget {
         ),
         child: SafeArea(
           child: Center(
-            child: SingleChildScrollView(
+            child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   // Título e Branding
                   Container(
-                    width: 140,
-                    height: 140,
+                    width: 120,
+                    height: 120,
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.6),
                       borderRadius: BorderRadius.circular(24),
@@ -47,12 +60,12 @@ class HomeScreen extends StatelessWidget {
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(16),
                       child: Image.asset(
-                        'assets/images/player_icon.png',
+                        'assets/images/jogador/player_icon.png',
                         fit: BoxFit.cover,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 16),
                   const Text(
                     'Caminho da Aprovação',
                     style: TextStyle(
@@ -63,17 +76,7 @@ class HomeScreen extends StatelessWidget {
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Explore a PUC-Campinas e sobreviva ao Projeto Integrador!',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xFF6A6E89),
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 48),
+                  const SizedBox(height: 24),
 
                   // Card de Menu com efeito glass
                   Container(
@@ -88,7 +91,7 @@ class HomeScreen extends StatelessWidget {
                         ),
                       ],
                     ),
-                    padding: const EdgeInsets.all(24),
+                    padding: const EdgeInsets.all(16),
                     child: Column(
                       children: [
                         const Text(
@@ -99,34 +102,53 @@ class HomeScreen extends StatelessWidget {
                             color: Color(0xFF4A4E69),
                           ),
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 12),
+                        _BotaoEstilizado(
+                          icone: Icons.play_arrow_rounded,
+                          texto: 'Iniciar',
+                          corBase: const Color(0xFF2D6A4F),
+                          corTexto: Colors.white,
+                          aoPressionar: () async {
+                            AudioService().playClickSfx();
+                            await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const CampanhaScreen(),
+                              ),
+                            );
+                            AudioService().playMenuBgm();
+                          },
+                        ),
+                        const SizedBox(height: 12),
                         _BotaoEstilizado(
                           icone: Icons.my_location_rounded,
                           texto: 'Minha Localização',
                           corBase: const Color(0xFFB5EAD7), // Verde água pastel
                           corTexto: const Color(0xFF2D6A4F),
-                          aoPressionar: () {
-                            Navigator.push(
+                          aoPressionar: () async {
+                            await Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (_) => const LocalizacaoScreen(),
                               ),
                             );
+                            AudioService().playMenuBgm();
                           },
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 12),
                         _BotaoEstilizado(
                           icone: Icons.explore_rounded,
                           texto: 'Ambientes do Jogo',
                           corBase: const Color(0xFFFFB7B2), // Rosa/Salmão pastel
                           corTexto: const Color(0xFF9D0208),
-                          aoPressionar: () {
-                            Navigator.push(
+                          aoPressionar: () async {
+                            await Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (_) => const AmbientesScreen(),
                               ),
                             );
+                            AudioService().playMenuBgm();
                           },
                         ),
                       ],
@@ -176,7 +198,10 @@ class _BotaoEstilizado extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
-          onTap: aoPressionar,
+          onTap: () {
+            AudioService().playClickSfx();
+            aoPressionar();
+          },
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
             child: Row(

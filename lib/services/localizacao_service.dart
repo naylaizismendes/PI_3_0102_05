@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:developer' as developer;
 import 'package:geolocator/geolocator.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Serviço responsável por encapsular toda a lógica de geolocalização.
@@ -133,6 +134,27 @@ class LocalizacaoService {
     required double lon2,
   }) {
     return Geolocator.distanceBetween(lat1, lon1, lat2, lon2);
+  }
+
+  /// Verifica se um ponto geográfico está dentro de um polígono delimitado.
+  /// Utiliza o algoritmo de Ray Casting.
+  bool isPontoDentroDoPoligono(Position pos, List<LatLng> poligono) {
+    if (poligono.length < 3) return false;
+    bool inside = false;
+    final double x = pos.longitude;
+    final double y = pos.latitude;
+
+    for (int i = 0, j = poligono.length - 1; i < poligono.length; j = i++) {
+      final double xi = poligono[i].longitude;
+      final double yi = poligono[i].latitude;
+      final double xj = poligono[j].longitude;
+      final double yj = poligono[j].latitude;
+
+      final bool intersect = ((yi > y) != (yj > y)) &&
+          (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+      if (intersect) inside = !inside;
+    }
+    return inside;
   }
 
   /// Salva a última posição conhecida localmente.

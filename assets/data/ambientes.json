@@ -3,9 +3,13 @@
     "id": "h15",
     "nome": "H15",
     "descricao": "Introdução ao jogo. Local das provas teóricas (primeira avaliação e recuperação, se necessário).",
-    "latitude": -22.83403852745762,
-    "longitude": -47.05253054507469,
-    "raioMetros": 10,
+    "poligono": [
+      {"lat": -22.83399378840823, "lng": -47.05299594234876},
+      {"lat": -22.83424160743509, "lng": -47.05296040308061},
+      {"lat": -22.83415904152339, "lng": -47.052303146979526},
+      {"lat": -22.833914312363607, "lng": -47.052340027352145}
+    ],
+    "desbloqueado": true,
     "imagem": "assets/images/ambients/h15-1.png"
   },
   {

@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import '../models/ambiente.dart';
 import '../services/localizacao_service.dart';
+import '../services/audio_service.dart';
 import 'ambiente_detalhe_screen.dart';
 
 class AmbientesScreen extends StatefulWidget {
@@ -50,6 +51,13 @@ class _AmbientesScreenState extends State<AmbientesScreen> {
           'Ambientes do Jogo',
           style:
               TextStyle(color: Color(0xFF4A4E69), fontWeight: FontWeight.bold),
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            AudioService().playClickSfx();
+            Navigator.pop(context);
+          },
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -103,36 +111,46 @@ class _AmbienteCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     double? distancia;
-    bool dentroDoRaio = false;
+    bool dentroDaArea = false;
 
     if (posicaoAtual != null) {
       distancia = service.distanciaEmMetros(
         lat1: posicaoAtual!.latitude,
         lon1: posicaoAtual!.longitude,
-        lat2: ambiente.latitude,
-        lon2: ambiente.longitude,
+        lat2: ambiente.centro.latitude,
+        lon2: ambiente.centro.longitude,
       );
-      dentroDoRaio = distancia! <= ambiente.raioMetros;
+      
+      if (ambiente.poligono.length >= 3) {
+        dentroDaArea = service.isPontoDentroDoPoligono(posicaoAtual!, ambiente.poligono);
+      } else {
+        // Fallback legado para os que ainda usam ponto central + raio
+        dentroDaArea = distancia! <= ambiente.raioMetros;
+      }
     }
 
     return GestureDetector(
       onTap: () {
+        AudioService().playClickSfx();
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => AmbienteDetalheScreen(ambiente: ambiente),
+            builder: (context) => AmbienteDetalheScreen(
+              ambiente: ambiente,
+              posicaoAtual: posicaoAtual,
+            ),
           ),
         );
       },
       child: Container(
         decoration: BoxDecoration(
-          color: dentroDoRaio ? Colors.white : Colors.white.withOpacity(0.7),
+          color: dentroDaArea ? Colors.white : Colors.white.withOpacity(0.7),
           borderRadius: BorderRadius.circular(20),
-          border: dentroDoRaio
+          border: dentroDaArea
               ? Border.all(color: const Color(0xFF2D6A4F), width: 2)
               : null,
           boxShadow: [
-            if (dentroDoRaio)
+            if (dentroDaArea)
               BoxShadow(
                 color: const Color(0xFF2D6A4F).withOpacity(0.4),
                 blurRadius: 15,
@@ -197,14 +215,7 @@ class _AmbienteCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '📍 Lat: ${ambiente.latitude.toStringAsFixed(5)}  |  Long: ${ambiente.longitude.toStringAsFixed(5)}',
-                    style: const TextStyle(
-                        fontSize: 13,
-                        color: Color(0xFF4A4E69),
-                        fontWeight: FontWeight.w600),
-                  ),
-                  Text(
-                    '📏 Raio de interação: ${ambiente.raioMetros.toStringAsFixed(0)}m',
+                    '📍 Centro (Lat): ${ambiente.centro.latitude.toStringAsFixed(5)}  |  Long: ${ambiente.centro.longitude.toStringAsFixed(5)}',
                     style: const TextStyle(
                         fontSize: 13,
                         color: Color(0xFF4A4E69),
@@ -214,10 +225,10 @@ class _AmbienteCard extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.only(top: 4),
                       child: Text(
-                        '🚶 Distância: ${distancia.toStringAsFixed(0)}m',
+                        '🚶 Distância ao centro: ${distancia.toStringAsFixed(0)}m',
                         style: TextStyle(
                           fontSize: 13,
-                          color: dentroDoRaio
+                          color: dentroDaArea
                               ? const Color(0xFF2D6A4F)
                               : const Color(0xFF9D0208),
                           fontWeight: FontWeight.bold,
