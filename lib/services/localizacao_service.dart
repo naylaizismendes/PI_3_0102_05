@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:developer' as developer;
 import 'package:geolocator/geolocator.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// Serviço responsável por encapsular toda a lógica de geolocalização.
 ///
@@ -62,6 +64,7 @@ class LocalizacaoService {
       'Posição capturada — lat: ${pos.latitude}, lon: ${pos.longitude}',
       name: 'LocalizacaoService',
     );
+    await _salvarUltimaPosicao(pos);
 
     return pos;
   }
@@ -101,6 +104,7 @@ class LocalizacaoService {
           'precisão: ${pos.accuracy.toStringAsFixed(1)} m',
           name: 'LocalizacaoService',
         );
+        _salvarUltimaPosicao(pos);
         onPosicao(pos);
       },
       onError: (Object erro) {
@@ -130,6 +134,56 @@ class LocalizacaoService {
     required double lon2,
   }) {
     return Geolocator.distanceBetween(lat1, lon1, lat2, lon2);
+  }
+
+  /// Verifica se um ponto geográfico está dentro de um polígono delimitado.
+  /// Utiliza o algoritmo de Ray Casting.
+  bool isPontoDentroDoPoligono(Position pos, List<LatLng> poligono) {
+    if (poligono.length < 3) return false;
+    bool inside = false;
+    final double x = pos.longitude;
+    final double y = pos.latitude;
+
+    for (int i = 0, j = poligono.length - 1; i < poligono.length; j = i++) {
+      final double xi = poligono[i].longitude;
+      final double yi = poligono[i].latitude;
+      final double xj = poligono[j].longitude;
+      final double yj = poligono[j].latitude;
+
+      final bool intersect = ((yi > y) != (yj > y)) &&
+          (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+      if (intersect) inside = !inside;
+    }
+    return inside;
+  }
+
+  /// Salva a última posição conhecida localmente.
+  Future<void> _salvarUltimaPosicao(Position pos) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble('ultima_lat', pos.latitude);
+    await prefs.setDouble('ultima_lon', pos.longitude);
+  }
+
+  /// Recupera a última posição salva, se houver.
+  Future<Position?> obterUltimaPosicaoSalva() async {
+    final prefs = await SharedPreferences.getInstance();
+    final lat = prefs.getDouble('ultima_lat');
+    final lon = prefs.getDouble('ultima_lon');
+    if (lat != null && lon != null) {
+      return Position(
+        latitude: lat,
+        longitude: lon,
+        timestamp: DateTime.now(),
+        accuracy: 0.0,
+        altitude: 0.0,
+        heading: 0.0,
+        speed: 0.0,
+        speedAccuracy: 0.0,
+        altitudeAccuracy: 0.0,
+        headingAccuracy: 0.0,
+      );
+    }
+    return null;
   }
 
   Future<LocationPermission> _garantirPermissao() async {

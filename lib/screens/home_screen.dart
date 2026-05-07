@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'localizacao_screen.dart';
 import 'ambientes_screen.dart';
 import '../services/firestore_service.dart';
+import 'campanha_screen.dart';
+import '../services/audio_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -34,6 +36,10 @@ class _HomeScreenState extends State<HomeScreen> {
         statusFirebase = 'Erro ao conectar com Firebase: $e';
       });
     }
+  @override
+  void initState() {
+    super.initState();
+    AudioService().playMenuBgm();
   }
 
   @override
@@ -59,13 +65,15 @@ class _HomeScreenState extends State<HomeScreen> {
                 horizontal: 24.0,
                 vertical: 16.0,
               ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   // Ícone principal
                   Container(
-                    width: 140,
-                    height: 140,
+                    width: 120,
+                    height: 120,
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.6),
                       borderRadius: BorderRadius.circular(24),
@@ -81,7 +89,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(16),
                       child: Image.asset(
-                        'assets/images/player_icon.png',
+                        'assets/images/jogador/player_icon.png',
                         fit: BoxFit.cover,
                       ),
                     ),
@@ -89,6 +97,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                   const SizedBox(height: 32),
 
+                  const SizedBox(height: 16),
                   const Text(
                     'Caminho da Aprovação',
                     style: TextStyle(
@@ -133,6 +142,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
 
                   const SizedBox(height: 48),
+                  const SizedBox(height: 24),
 
                   // Card Menu
                   Container(
@@ -147,7 +157,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ],
                     ),
-                    padding: const EdgeInsets.all(24),
+                    padding: const EdgeInsets.all(16),
                     child: Column(
                       children: [
                         const Text(
@@ -158,34 +168,53 @@ class _HomeScreenState extends State<HomeScreen> {
                             color: Color(0xFF4A4E69),
                           ),
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 12),
+                        _BotaoEstilizado(
+                          icone: Icons.play_arrow_rounded,
+                          texto: 'Iniciar',
+                          corBase: const Color(0xFF2D6A4F),
+                          corTexto: Colors.white,
+                          aoPressionar: () async {
+                            AudioService().playClickSfx();
+                            await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const CampanhaScreen(),
+                              ),
+                            );
+                            AudioService().playMenuBgm();
+                          },
+                        ),
+                        const SizedBox(height: 12),
                         _BotaoEstilizado(
                           icone: Icons.my_location_rounded,
                           texto: 'Minha Localização',
                           corBase: const Color(0xFFB5EAD7),
                           corTexto: const Color(0xFF2D6A4F),
-                          aoPressionar: () {
-                            Navigator.push(
+                          aoPressionar: () async {
+                            await Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (_) => const LocalizacaoScreen(),
                               ),
                             );
+                            AudioService().playMenuBgm();
                           },
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 12),
                         _BotaoEstilizado(
                           icone: Icons.explore_rounded,
                           texto: 'Ambientes do Jogo',
                           corBase: const Color(0xFFFFB7B2),
                           corTexto: const Color(0xFF9D0208),
-                          aoPressionar: () {
-                            Navigator.push(
+                          aoPressionar: () async {
+                            await Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (_) => const AmbientesScreen(),
                               ),
                             );
+                            AudioService().playMenuBgm();
                           },
                         ),
                       ],
@@ -235,7 +264,10 @@ class _BotaoEstilizado extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
-          onTap: aoPressionar,
+          onTap: () {
+            AudioService().playClickSfx();
+            aoPressionar();
+          },
           child: Padding(
             padding: const EdgeInsets.symmetric(
               vertical: 16,

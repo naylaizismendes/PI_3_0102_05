@@ -28,14 +28,11 @@ class _LocalizacaoScreenState extends State<LocalizacaoScreen> {
   @override
   void initState() {
     super.initState();
-    // Solicita permissão e inicia o stream logo que a tela é construída,
-    // sem esperar o usuário tocar em nenhum botão.
     WidgetsBinding.instance.addPostFrameCallback((_) => _iniciar());
   }
 
   @override
   void dispose() {
-    // Para o stream de GPS para evitar vazamento de memória.
     _service.pararMonitoramento();
     super.dispose();
   }
@@ -78,7 +75,9 @@ class _LocalizacaoScreenState extends State<LocalizacaoScreen> {
       // Permissão concedida: inicia o monitoramento contínuo.
       await _service.iniciarMonitoramento(
         onPosicao: (pos) {
-          if (mounted) setState(() => _posicao = pos);
+          if (mounted) {
+            setState(() => _posicao = pos);
+          }
         },
         onErro: (erro) {
           if (mounted) setState(() => _erro = erro.toString());
@@ -184,6 +183,12 @@ class _LocalizacaoScreenState extends State<LocalizacaoScreen> {
           'Minha Localização',
           style: TextStyle(color: Color(0xFF4A4E69), fontWeight: FontWeight.bold),
         ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
         backgroundColor: Colors.transparent,
         elevation: 0,
         iconTheme: const IconThemeData(color: Color(0xFF4A4E69)),
@@ -213,25 +218,32 @@ class _LocalizacaoScreenState extends State<LocalizacaoScreen> {
 
   Widget _construirConteudo() {
     if (_carregando) {
-      return const Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          CircularProgressIndicator(),
-          SizedBox(height: 16),
-          Text(
-            'Aguardando permissão e sinal GPS…',
-            style: TextStyle(color: Color(0xFF4A4E69)),
-          ),
-        ],
+      return const Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            Text(
+              'Aguardando permissão e sinal GPS…',
+              style: TextStyle(color: Color(0xFF4A4E69)),
+            ),
+          ],
+        ),
       );
     }
 
     if (_erro != null) {
-      return _MensagemErro(
-        mensagem: _erro!,
-        negadaPermanentemente: _negadaPermanentemente,
-        onTentarNovamente:
-            _negadaPermanentemente ? Geolocator.openAppSettings : _iniciar,
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: _MensagemErro(
+            mensagem: _erro!,
+            negadaPermanentemente: _negadaPermanentemente,
+            onTentarNovamente:
+                _negadaPermanentemente ? Geolocator.openAppSettings : _iniciar,
+          ),
+        ),
       );
     }
 
@@ -240,16 +252,18 @@ class _LocalizacaoScreenState extends State<LocalizacaoScreen> {
     }
 
     // Estado de aguardo enquanto o primeiro fix do GPS ainda não chegou.
-    return const Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(Icons.gps_not_fixed, size: 80, color: Color(0xFF4A4E69)),
-        SizedBox(height: 16),
-        Text(
-          'Aguardando sinal GPS…',
-          style: TextStyle(color: Color(0xFF4A4E69)),
-        ),
-      ],
+    return const Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.gps_not_fixed, size: 80, color: Color(0xFF4A4E69)),
+          SizedBox(height: 16),
+          Text(
+            'Aguardando sinal GPS…',
+            style: TextStyle(color: Color(0xFF4A4E69)),
+          ),
+        ],
+      ),
     );
   }
 }
