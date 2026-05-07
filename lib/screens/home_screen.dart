@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'localizacao_screen.dart';
 import 'ambientes_screen.dart';
+import '../services/firestore_service.dart';
 import 'campanha_screen.dart';
 import '../services/audio_service.dart';
 
@@ -12,6 +13,29 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final FirestoreService _firestoreService = FirestoreService();
+
+  String statusFirebase = 'Testando conexão com Firebase...';
+
+  @override
+  void initState() {
+    super.initState();
+    testarFirebase();
+  }
+
+  Future<void> testarFirebase() async {
+    try {
+      await _firestoreService.salvarTeste();
+      final dados = await _firestoreService.lerTeste();
+
+      setState(() {
+        statusFirebase = dados?['mensagem'] ?? 'Conectado, mas sem mensagem.';
+      });
+    } catch (e) {
+      setState(() {
+        statusFirebase = 'Erro ao conectar com Firebase: $e';
+      });
+    }
   @override
   void initState() {
     super.initState();
@@ -28,20 +52,25 @@ class _HomeScreenState extends State<HomeScreen> {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Color(0xFFE2F0CB), // Verde pastel (gramados do mapa)
-              Color(0xFFFFDAC1), // Pêssego/Laranja pastel (telhados)
-              Color(0xFFC7CEEA), // Roxo/Azul pastel (ruas e sombras)
+              Color(0xFFE2F0CB),
+              Color(0xFFFFDAC1),
+              Color(0xFFC7CEEA),
             ],
           ),
         ),
         child: SafeArea(
           child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24.0,
+                vertical: 16.0,
+              ),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Título e Branding
+                  // Ícone principal
                   Container(
                     width: 120,
                     height: 120,
@@ -65,6 +94,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                   ),
+
+                  const SizedBox(height: 32),
+
                   const SizedBox(height: 16),
                   const Text(
                     'Caminho da Aprovação',
@@ -76,9 +108,43 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     textAlign: TextAlign.center,
                   ),
+
+                  const SizedBox(height: 8),
+
+                  const Text(
+                    'Explore a PUC-Campinas e sobreviva ao Projeto Integrador!',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF6A6E89),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Status Firebase
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.75),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Text(
+                      statusFirebase,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF2D6A4F),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 48),
                   const SizedBox(height: 24),
 
-                  // Card de Menu com efeito glass
+                  // Card Menu
                   Container(
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.85),
@@ -123,7 +189,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         _BotaoEstilizado(
                           icone: Icons.my_location_rounded,
                           texto: 'Minha Localização',
-                          corBase: const Color(0xFFB5EAD7), // Verde água pastel
+                          corBase: const Color(0xFFB5EAD7),
                           corTexto: const Color(0xFF2D6A4F),
                           aoPressionar: () async {
                             await Navigator.push(
@@ -139,7 +205,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         _BotaoEstilizado(
                           icone: Icons.explore_rounded,
                           texto: 'Ambientes do Jogo',
-                          corBase: const Color(0xFFFFB7B2), // Rosa/Salmão pastel
+                          corBase: const Color(0xFFFFB7B2),
                           corTexto: const Color(0xFF9D0208),
                           aoPressionar: () async {
                             await Navigator.push(
@@ -203,7 +269,10 @@ class _BotaoEstilizado extends StatelessWidget {
             aoPressionar();
           },
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+            padding: const EdgeInsets.symmetric(
+              vertical: 16,
+              horizontal: 20,
+            ),
             child: Row(
               children: [
                 Container(
@@ -212,7 +281,11 @@ class _BotaoEstilizado extends StatelessWidget {
                     color: Colors.white.withOpacity(0.5),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(icone, color: corTexto, size: 24),
+                  child: Icon(
+                    icone,
+                    color: corTexto,
+                    size: 24,
+                  ),
                 ),
                 const SizedBox(width: 16),
                 Expanded(

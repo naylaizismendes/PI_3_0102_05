@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "658778419383",
+    "project_id": "pi3-ca",
+    "storage_bucket": "pi3-ca.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:658778419383:android:a7043829b43532a7481d32",
+        "android_client_info": {
+          "package_name": "com.example.rpg_mobile_2026"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBag_H_SPs0dSGvNNOT3My6dabA9EKYw2s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
