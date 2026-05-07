@@ -4,10 +4,10 @@
     "nome": "H15",
     "descricao": "Introdução ao jogo. Local das provas teóricas (primeira avaliação e recuperação, se necessário).",
     "poligono": [
-      {"lat": -22.83399378840823, "lng": -47.05299594234876},
-      {"lat": -22.83424160743509, "lng": -47.05296040308061},
-      {"lat": -22.83415904152339, "lng": -47.052303146979526},
-      {"lat": -22.833914312363607, "lng": -47.052340027352145}
+      {"lat": -22.834281304668256, "lng": -47.05292464188912},
+      {"lat": -22.833990661654383, "lng": -47.05300384498136},
+      {"lat": -22.83389865463756, "lng": -47.0523461459914},
+      {"lat": -22.8341841719825, "lng": -47.05227305579129}
     ],
     "desbloqueado": true,
     "imagem": "assets/images/ambients/h15-1.png"
@@ -16,45 +16,60 @@
     "id": "biblioteca",
     "nome": "Biblioteca",
     "descricao": "Local de estudo e pesquisa. Aqui você pode conseguir um livro que concede uma resposta da primeira avaliação.",
-    "latitude": -22.833647949051585,
-    "longitude": -47.05195387018311,
-    "raioMetros": 8,
+    "poligono": [
+      {"lat": -22.834015851792074, "lng": -47.05203751883093},
+      {"lat": -22.833330857873626, "lng": -47.052142984544936},
+      {"lat": -22.83332344179981, "lng": -47.051879457518794},
+      {"lat": -22.83398350089818, "lng": -47.051735337092204}
+    ],
     "imagem": "assets/images/ambients/biblioteca.png"
   },
   {
     "id": "cta",
     "nome": "CTA",
     "descricao": "Ponto de transição do campus para o recebimento de orientações da jornada.",
-    "latitude": -22.833175792641924,
-    "longitude": -47.05262442238137,
-    "raioMetros": 5,
+    "poligono": [
+      {"lat": -22.833349994319306, "lng": -47.05274132577589},
+      {"lat": -22.833078071384918, "lng": -47.05281039265603},
+      {"lat": -22.833020443996542, "lng": -47.05250710273633},
+      {"lat": -22.83331090723578, "lng": -47.052436694749986}
+    ],
     "imagem": "assets/images/ambients/CTA.png"
   },
   {
     "id": "lab_a",
-    "nome": "Laboratório A CT",
+    "nome": "Lab A CT",
     "descricao": "Laboratório de hardware. Aqui você imprime o trabalho final e pode conseguir uma resposta da prova final através de um quiz.",
-    "latitude": -22.83261464126679,
-    "longitude": -47.052624422410574,
-    "raioMetros": 3,
+    "poligono": [
+      {"lat": -22.832798858168726, "lng": -47.05268638521186},
+      {"lat": -22.832425921495528, "lng": -47.052613305510306},
+      {"lat": -22.83245867603452, "lng": -47.052493276661245},
+      {"lat": -22.832819102884415, "lng": -47.052556759255566}
+    ],
     "imagem": "assets/images/ambients/lab a.png"
   },
   {
     "id": "lab_b",
-    "nome": "Laboratório B CT",
+    "nome": "Lab B CT",
     "descricao": "Laboratório de software. Aqui você entrega o celular de um NPC e pode obter uma resposta da prova final através de um quiz.",
-    "latitude": -22.832641833677098,
-    "longitude": -47.0528980077,
-    "raioMetros": 3,
+    "poligono": [
+      {"lat": -22.832843977953036, "lng": -47.05298148370376},
+      {"lat": -22.832471092962884, "lng": -47.05291021010383},
+      {"lat": -22.83250013943165, "lng": -47.05279286346195},
+      {"lat": -22.832857830749322, "lng": -47.052857319284904}
+    ],
     "imagem": "assets/images/ambients/lab b.png"
   },
   {
     "id": "auditorio",
     "nome": "Auditório",
     "descricao": "Palco da prova final e dos cenários de desfecho.",
-    "latitude": -22.833144825588214,
-    "longitude": -47.053164815129875,
-    "raioMetros": 10,
+    "poligono": [
+      {"lat": -22.833423305819853, "lng": -47.053194742369314},
+      {"lat": -22.833022441874483, "lng": -47.05324063385902},
+      {"lat": -22.832994631533204, "lng": -47.05289597000478},
+      {"lat": -22.83338993350514, "lng": -47.05283465581297}
+    ],
     "imagem": "assets/images/ambients/auditorio.png"
   }
 ]

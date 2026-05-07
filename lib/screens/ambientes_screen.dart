@@ -16,17 +16,16 @@ class AmbientesScreen extends StatefulWidget {
 
 class _AmbientesScreenState extends State<AmbientesScreen> {
   final LocalizacaoService _service = LocalizacaoService();
-  List<Ambiente> _ambientes = [];
-  Position? _posicaoAtual;
-  bool _carregando = true;
+  late Future<Map<String, dynamic>> _futureDados;
 
   @override
   void initState() {
     super.initState();
-    _carregarDados();
+    // Inicia o Future uma única vez no ciclo de vida do widget, evitando múltiplas requisições em rebuilds (Aula 9)
+    _futureDados = _carregarDados();
   }
 
-  Future<void> _carregarDados() async {
+  Future<Map<String, dynamic>> _carregarDados() async {
     final jsonString =
         await rootBundle.loadString('assets/data/ambientes.json');
     final jsonList = jsonDecode(jsonString) as List;
@@ -35,11 +34,10 @@ class _AmbientesScreenState extends State<AmbientesScreen> {
 
     final pos = await _service.obterUltimaPosicaoSalva();
 
-    setState(() {
-      _ambientes = ambientesCarregados;
-      _posicaoAtual = pos;
-      _carregando = false;
-    });
+    return {
+      'ambientes': ambientesCarregados,
+      'posicao': pos,
+    };
   }
 
   @override
@@ -76,21 +74,37 @@ class _AmbientesScreenState extends State<AmbientesScreen> {
           ),
         ),
         child: SafeArea(
-          child: _carregando
-              ? const Center(child: CircularProgressIndicator())
-              : ListView.separated(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: _ambientes.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 16),
-                  itemBuilder: (context, index) {
-                    final ambiente = _ambientes[index];
-                    return _AmbienteCard(
-                      ambiente: ambiente,
-                      posicaoAtual: _posicaoAtual,
-                      service: _service,
-                    );
-                  },
-                ),
+          child: FutureBuilder<Map<String, dynamic>>(
+            future: _futureDados,
+            builder: (context, snapshot) {
+              if (snapshot.hasError) {
+                return const Center(
+                  child: Text('Erro ao carregar ambientes.', style: TextStyle(color: Colors.red)),
+                );
+              }
+              
+              if (!snapshot.hasData) {
+                return const Center(child: CircularProgressIndicator());
+              }
+
+              final ambientes = snapshot.data!['ambientes'] as List<Ambiente>;
+              final posicaoAtual = snapshot.data!['posicao'] as Position?;
+
+              return ListView.separated(
+                padding: const EdgeInsets.all(16),
+                itemCount: ambientes.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 16),
+                itemBuilder: (context, index) {
+                  final ambiente = ambientes[index];
+                  return _AmbienteCard(
+                    ambiente: ambiente,
+                    posicaoAtual: posicaoAtual,
+                    service: _service,
+                  );
+                },
+              );
+            },
+          ),
         ),
       ),
     );

@@ -16,39 +16,54 @@ class CampanhaScreen extends StatefulWidget {
   State<CampanhaScreen> createState() => _CampanhaScreenState();
 }
 
-class _CampanhaScreenState extends State<CampanhaScreen> {
+class _CampanhaScreenState extends State<CampanhaScreen> with SingleTickerProviderStateMixin {
   final LocalizacaoService _service = LocalizacaoService();
   Position? _posicao;
   String? _erro;
   bool _carregando = false;
-  List<Ambiente> _ambientes = [];
+  late Future<List<Ambiente>> _futureAmbientes;
+  
+  AnimationController? _animController;
+  Animation<double>? _bounceAnimation;
+
+  // VARIAVEIS DE CALIBRACAO DA IMAGEM DO MAPA
+  // Ajuste estes valores caso o mapa desenhado (ruas, árvores) não bata com o GPS real.
+  // Valores positivos na Lat movem a imagem pro Norte. Positivos na Lng movem pro Leste.
+  static const double _offsetLat =  0.000040; // Ajuste inicial estimado para o Sul
+  static const double _offsetLng =  -0.000040;  // Ajuste inicial estimado para o Leste
 
   final LatLngBounds _limitesMapa = LatLngBounds(
-    const LatLng(-22.834790669949925, -47.05333005212148), // Sudoeste
-    const LatLng(-22.83179896419191, -47.05132320737695), // Nordeste
+    LatLng(-22.834790669949925 + _offsetLat, -47.05333005212148 + _offsetLng), // Sudoeste
+    LatLng(-22.83179896419191 + _offsetLat, -47.05132320737695 + _offsetLng), // Nordeste
   );
 
   @override
   void initState() {
     super.initState();
     AudioService().playMapBgm();
-    _carregarAmbientes().then((_) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _iniciar());
-    });
+    
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    )..repeat(reverse: true);
+    
+    _bounceAnimation = Tween<double>(begin: 0, end: -8).animate(
+      CurvedAnimation(parent: _animController!, curve: Curves.easeInOut),
+    );
+
+    _futureAmbientes = _carregarAmbientes();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _iniciar());
   }
 
-  Future<void> _carregarAmbientes() async {
+  Future<List<Ambiente>> _carregarAmbientes() async {
     final jsonString = await rootBundle.loadString('assets/data/ambientes.json');
     final jsonList = jsonDecode(jsonString) as List;
-    if (mounted) {
-      setState(() {
-        _ambientes = jsonList.map((j) => Ambiente.fromJson(j)).toList();
-      });
-    }
+    return jsonList.map((j) => Ambiente.fromJson(j)).toList();
   }
 
   @override
   void dispose() {
+    _animController?.dispose();
     _service.pararMonitoramento();
     AudioService().stopBgm();
     super.dispose();
@@ -194,80 +209,142 @@ class _CampanhaScreenState extends State<CampanhaScreen> {
                               ),
                             ],
                           ),
+                          // Markers dos ambientes via FutureBuilder (renderizados primeiro, para ficarem no fundo)
+                          FutureBuilder<List<Ambiente>>(
+                            future: _futureAmbientes,
+                            builder: (context, snapshot) {
+                              if (!snapshot.hasData) return const MarkerLayer(markers: []);
+                              
+                              final ambientes = snapshot.data!;
+                              return MarkerLayer(
+                                markers: ambientes.map((ambiente) {
+                                  bool podeEntrar = false;
+                                  if (_posicao != null) {
+                                    if (ambiente.poligono.length >= 3) {
+                                      podeEntrar = _service.isPontoDentroDoPoligono(_posicao!, ambiente.poligono);
+                                    } else {
+                                      final dist = _service.distanciaEmMetros(
+                                        lat1: _posicao!.latitude,
+                                        lon1: _posicao!.longitude,
+                                        lat2: ambiente.centro.latitude,
+                                        lon2: ambiente.centro.longitude,
+                                      );
+                                      podeEntrar = dist <= ambiente.raioMetros;
+                                    }
+                                  }
+
+                                  return Marker(
+                                    point: ambiente.centro,
+                                    width: 80,
+                                    height: 104, // 52 * 2
+                                    alignment: Alignment.center,
+                                    child: Align(
+                                      alignment: Alignment.topCenter,
+                                      child: GestureDetector(
+                                      onTap: () {
+                                        AudioService().playClickSfx();
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) => AmbienteDetalheScreen(
+                                              ambiente: ambiente,
+                                              posicaoAtual: _posicao,
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Container(
+                                            width: 80,
+                                            height: 40,
+                                            decoration: BoxDecoration(
+                                              color: podeEntrar ? const Color(0xFF2D6A4F) : Colors.white.withOpacity(0.9),
+                                              borderRadius: BorderRadius.circular(12),
+                                              border: Border.all(
+                                                color: podeEntrar ? Colors.white : const Color(0xFF4A4E69), 
+                                                width: 2,
+                                              ),
+                                              boxShadow: const [
+                                                BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2))
+                                              ],
+                                            ),
+                                            alignment: Alignment.center,
+                                            child: Text(
+                                              ambiente.nome,
+                                              style: TextStyle(
+                                                color: podeEntrar ? Colors.white : const Color(0xFF4A4E69),
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 12,
+                                              ),
+                                              textAlign: TextAlign.center,
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                          // Setinha apontando para baixo usando um container rotacionado
+                                          Transform.translate(
+                                            offset: const Offset(0, -4), // Sobe a setinha para mesclar e tampar a borda de baixo do card
+                                            child: Transform.rotate(
+                                              angle: 3.14159 / 4, // Rotaciona 45 graus para o losango virar uma seta
+                                              child: Container(
+                                                width: 12,
+                                                height: 12,
+                                                decoration: BoxDecoration(
+                                                  color: podeEntrar ? const Color(0xFF2D6A4F) : Colors.white.withOpacity(0.9),
+                                                  border: Border(
+                                                    bottom: BorderSide(
+                                                      color: podeEntrar ? Colors.white : const Color(0xFF4A4E69), 
+                                                      width: 2,
+                                                    ),
+                                                    right: BorderSide(
+                                                      color: podeEntrar ? Colors.white : const Color(0xFF4A4E69), 
+                                                      width: 2,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    ),
+                                  );
+                                }).toList(),
+                              );
+                            },
+                          ),
+                          // Marcador do jogador (renderizado por último, para ficar sempre no topo)
                           if (mostrarLocalizador && _posicao != null)
                             MarkerLayer(
                               markers: [
                                 Marker(
                                   point: LatLng(_posicao!.latitude, _posicao!.longitude),
-                                  width: 40,
-                                  height: 40,
-                                  child: Image.asset('assets/images/jogador/indicador.png'),
-                                ),
-                              ],
-                            ),
-                          // Markers dos ambientes sempre renderizam
-                          MarkerLayer(
-                            markers: _ambientes.map((ambiente) {
-                              bool podeEntrar = false;
-                              if (_posicao != null) {
-                                if (ambiente.poligono.length >= 3) {
-                                  podeEntrar = _service.isPontoDentroDoPoligono(_posicao!, ambiente.poligono);
-                                } else {
-                                  final dist = _service.distanciaEmMetros(
-                                    lat1: _posicao!.latitude,
-                                    lon1: _posicao!.longitude,
-                                    lat2: ambiente.centro.latitude,
-                                    lon2: ambiente.centro.longitude,
-                                  );
-                                  podeEntrar = dist <= ambiente.raioMetros;
-                                }
-                              }
-
-                              return Marker(
-                                point: ambiente.centro,
-                                width: 100,
-                                height: 40,
-                                alignment: Alignment.topCenter,
-                                child: GestureDetector(
-                                  onTap: () {
-                                    AudioService().playClickSfx();
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (_) => AmbienteDetalheScreen(
-                                          ambiente: ambiente,
-                                          posicaoAtual: _posicao,
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color: podeEntrar ? const Color(0xFF2D6A4F) : Colors.white.withOpacity(0.9),
-                                      borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(
-                                        color: podeEntrar ? Colors.white : const Color(0xFF4A4E69), 
-                                        width: 2,
-                                      ),
-                                      boxShadow: const [
-                                        BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2))
-                                      ],
-                                    ),
-                                    alignment: Alignment.center,
-                                    child: Text(
-                                      ambiente.nome,
-                                      style: TextStyle(
-                                        color: podeEntrar ? Colors.white : const Color(0xFF4A4E69),
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 12,
-                                      ),
-                                      textAlign: TextAlign.center,
+                                  width: 48,
+                                  height: 96,
+                                  alignment: Alignment.center,
+                                  child: IgnorePointer(
+                                    child: Align(
+                                      alignment: Alignment.topCenter,
+                                      child: _bounceAnimation != null 
+                                        ? AnimatedBuilder(
+                                          animation: _bounceAnimation!,
+                                          builder: (context, child) {
+                                            return Transform.translate(
+                                              offset: Offset(0, _bounceAnimation!.value),
+                                              child: child,
+                                            );
+                                          },
+                                          child: Image.asset('assets/images/jogador/indicador.png'),
+                                        )
+                                      : Image.asset('assets/images/jogador/indicador.png'),
                                     ),
                                   ),
-                                ),
-                              );
-                            }).toList(),
-                          ),
+                                  ),
+                                ],
+                            ),
                         ],
                       );
                     },
