@@ -53,7 +53,7 @@ class _AmbientesScreenState extends State<AmbientesScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            AudioService().playClickSfx();
+            AudioService().playBackSfx();
             Navigator.pop(context);
           },
         ),

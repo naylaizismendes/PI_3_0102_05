@@ -65,7 +65,7 @@ class _CampanhaScreenState extends State<CampanhaScreen> with SingleTickerProvid
   void dispose() {
     _animController?.dispose();
     _service.pararMonitoramento();
-    AudioService().stopBgm();
+    // A música agora é global e contínua, não para aqui.
     super.dispose();
   }
 
@@ -137,7 +137,7 @@ class _CampanhaScreenState extends State<CampanhaScreen> with SingleTickerProvid
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            AudioService().playClickSfx();
+            AudioService().playBackSfx();
             Navigator.pop(context);
           },
         ),
