@@ -21,6 +21,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     testarFirebase();
+    AudioService().playMenuBgm();
   }
 
   Future<void> testarFirebase() async {
@@ -36,10 +37,6 @@ class _HomeScreenState extends State<HomeScreen> {
         statusFirebase = 'Erro ao conectar com Firebase: $e';
       });
     }
-  @override
-  void initState() {
-    super.initState();
-    AudioService().playMenuBgm();
   }
 
   @override
@@ -65,8 +62,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 horizontal: 24.0,
                 vertical: 16.0,
               ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -105,18 +100,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       fontWeight: FontWeight.w900,
                       color: Color(0xFF4A4E69),
                       letterSpacing: 1.5,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-
-                  const SizedBox(height: 8),
-
-                  const Text(
-                    'Explore a PUC-Campinas e sobreviva ao Projeto Integrador!',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xFF6A6E89),
                     ),
                     textAlign: TextAlign.center,
                   ),
