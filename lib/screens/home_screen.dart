@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'localizacao_screen.dart';
 import 'ambientes_screen.dart';
-import '../services/firestore_service.dart';
 import '../services/auth_service.dart';
 import 'campanha_screen.dart';
 import '../services/audio_service.dart';
@@ -14,47 +13,166 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final FirestoreService _firestoreService = FirestoreService();
   final AuthService _authService = AuthService();
-
-  String statusFirebase = 'Testando conexão com Firebase...';
+  String _nomeJogador = '';
 
   @override
   void initState() {
     super.initState();
-    testarFirebase();
     AudioService().playMenuBgm();
+    // Verifica se o jogador já tem nome definido
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _verificarNome();
+    });
   }
 
-  Future<void> testarFirebase() async {
-    try {
-      await _firestoreService.salvarTeste();
-      final dados = await _firestoreService.lerTeste();
-
-      setState(() {
-        statusFirebase = dados?['mensagem'] ?? 'Conectado, mas sem mensagem.';
-      });
-    } catch (e) {
-      setState(() {
-        statusFirebase = 'Erro ao conectar com Firebase: $e';
-      });
+  Future<void> _verificarNome() async {
+    // Convidado não precisa de popup — vai como "Guest"
+    if (_authService.isGuest) {
+      setState(() => _nomeJogador = 'Guest');
+      return;
     }
+    final nome = _authService.displayName;
+    if (nome == null || nome.trim().isEmpty) {
+      await _mostrarPopupNome();
+    }
+    // Atualiza o nome exibido após o popup (ou se já tinha)
+    setState(() {
+      _nomeJogador = _authService.displayName ?? '';
+    });
+  }
+
+  Future<void> _mostrarPopupNome() async {
+    final controller = TextEditingController();
+    String? erro;
+
+    await showDialog(
+      context: context,
+      barrierDismissible: false, // Não fecha tocando fora
+      builder: (ctx) {
+        return PopScope(
+          canPop: false, // Bloqueia botão voltar do Android
+          child: StatefulBuilder(
+            builder: (ctx, setDialogState) {
+              return AlertDialog(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                backgroundColor: Colors.white,
+                title: const Text(
+                  'Como você se chama?',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF4A4E69),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      'Os personagens vão te chamar por esse nome durante o jogo.',
+                      style: TextStyle(fontSize: 13, color: Color(0xFF6B6F8A)),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: controller,
+                      style: const TextStyle(color: Color(0xFF2D2D2D), fontSize: 16),
+                      decoration: InputDecoration(
+                        hintText: 'Seu nome',
+                        hintStyle: const TextStyle(color: Color(0xFFB0B3C6)),
+                        filled: true,
+                        fillColor: const Color(0xFFF5F6FA),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: Color(0xFF2D6A4F), width: 1.5),
+                        ),
+                        prefixIcon: const Icon(Icons.person_outline, color: Color(0xFF4A4E69)),
+                        errorText: erro,
+                      ),
+                    ),
+                  ],
+                ),
+                actions: [
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2D6A4F),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      ),
+                      onPressed: () async {
+                        final texto = controller.text.trim();
+                        if (texto.isEmpty) {
+                          setDialogState(() => erro = 'Digite um nome para continuar');
+                          return;
+                        }
+                        await _authService.updateName(texto);
+                        if (ctx.mounted) Navigator.of(ctx).pop();
+                      },
+                      child: const Text('Confirmar', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Fundo com gradiente suave em tons pastéis inspirados no mapa
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
+        scrolledUnderElevation: 0,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.logout_rounded, color: Color(0xFF4A4E69)),
-            tooltip: 'Sair',
-            onPressed: () async {
-              await _authService.signOut();
-            },
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: PopupMenuButton<String>(
+              icon: const Icon(Icons.menu_rounded, color: Color(0xFF2D6A4F), size: 34),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              onSelected: (value) async {
+                if (value == 'logout' || value == 'criar_conta') {
+                  AudioService().playClickSfx();
+                  await _authService.signOut();
+                }
+              },
+              itemBuilder: (BuildContext context) => [
+                if (_authService.isGuest)
+                  const PopupMenuItem(
+                    value: 'criar_conta',
+                    child: Row(
+                      children: [
+                        Icon(Icons.person_add_rounded, color: Color(0xFF2D6A4F), size: 20),
+                        SizedBox(width: 12),
+                        Text('Criar conta', style: TextStyle(color: Color(0xFF2D6A4F), fontWeight: FontWeight.w600)),
+                      ],
+                    ),
+                  )
+                else
+                  const PopupMenuItem(
+                    value: 'logout',
+                    child: Row(
+                      children: [
+                        Icon(Icons.logout_rounded, color: Color(0xFF9D0208), size: 20),
+                        SizedBox(width: 12),
+                        Text('Sair da conta', style: TextStyle(color: Color(0xFF9D0208), fontWeight: FontWeight.w600)),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
           ),
         ],
       ),
@@ -108,36 +226,17 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(height: 32),
 
                   const SizedBox(height: 16),
-                  const Text(
-                    'Caminho da Aprovação',
-                    style: TextStyle(
-                      fontSize: 36,
+                  Text(
+                    'Bem-vindo(a), ${_nomeJogador.isEmpty ? '...' : _nomeJogador}',
+                    style: const TextStyle(
+                      fontSize: 28,
                       fontWeight: FontWeight.w900,
                       color: Color(0xFF4A4E69),
-                      letterSpacing: 1.5,
+                      letterSpacing: 1.0,
                     ),
                     textAlign: TextAlign.center,
                   ),
 
-                  const SizedBox(height: 16),
-
-                  // Status Firebase
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.75),
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Text(
-                      statusFirebase,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF2D6A4F),
-                      ),
-                    ),
-                  ),
 
                   const SizedBox(height: 48),
                   const SizedBox(height: 24),

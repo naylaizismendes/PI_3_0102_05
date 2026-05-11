@@ -11,6 +11,7 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _authService = AuthService();
@@ -21,6 +22,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   void dispose() {
+    _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -39,6 +41,7 @@ class _LoginScreenState extends State<LoginScreen> {
         await _authService.registerWithEmail(
           _emailController.text.trim(),
           _passwordController.text,
+          _nameController.text.trim(),
         );
       }
     } on FirebaseAuthException catch (e) {
@@ -197,9 +200,23 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                           const SizedBox(height: 20),
+                          // Campo Nome (apenas no cadastro)
+                          if (!_isLogin) ...[
+                            TextFormField(
+                              controller: _nameController,
+                              style: const TextStyle(color: Color(0xFF2D2D2D)),
+                              decoration: _inputDecoration('Nome do Jogador', Icons.person_outline),
+                              validator: (v) {
+                                if (v == null || v.trim().isEmpty) return 'Informe seu nome';
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 16),
+                          ],
                           TextFormField(
                             controller: _emailController,
                             keyboardType: TextInputType.emailAddress,
+                            style: const TextStyle(color: Color(0xFF2D2D2D)),
                             decoration: _inputDecoration('Email', Icons.email_outlined),
                             validator: (v) {
                               if (v == null || v.trim().isEmpty) return 'Informe o email';
@@ -211,6 +228,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           TextFormField(
                             controller: _passwordController,
                             obscureText: _obscurePassword,
+                            style: const TextStyle(color: Color(0xFF2D2D2D)),
                             decoration: _inputDecoration(
                               'Senha',
                               Icons.lock_outline,
