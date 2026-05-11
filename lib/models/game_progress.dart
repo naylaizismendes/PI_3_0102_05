@@ -4,11 +4,13 @@ class GameProgress {
   final int currentScene;
   final Map<String, bool> completedScenes;
   final DateTime? updatedAt;
+  final bool jogoFinalizado;
 
   const GameProgress({
     required this.currentScene,
     required this.completedScenes,
     this.updatedAt,
+    this.jogoFinalizado = false,
   });
 
   factory GameProgress.initial() {
@@ -40,6 +42,7 @@ class GameProgress {
       currentScene: (data['currentScene'] as num?)?.toInt() ?? 1,
       completedScenes: scenes,
       updatedAt: (data['updatedAt'] as Timestamp?)?.toDate(),
+      jogoFinalizado: data['jogoFinalizado'] == true,
     );
   }
 
@@ -48,6 +51,7 @@ class GameProgress {
       'currentScene': currentScene,
       'completedScenes': completedScenes,
       'updatedAt': FieldValue.serverTimestamp(),
+      'jogoFinalizado': jogoFinalizado,
     };
   }
 
@@ -76,6 +80,22 @@ class GameProgress {
     );
   }
 
+  static const Map<int, String> _orientacoes = {
+    1: 'Vá para o H15',
+    2: 'Vá para a Biblioteca',
+    3: 'Volte para o H15',
+    4: 'Vá para o CTA',
+    5: 'Vá para o Lab A',
+    6: 'Vá para o Lab B',
+    7: 'Vá para o Auditório',
+    8: 'Volte para o H15',
+  };
+
+  String get orientacaoAtual {
+    if (jogoFinalizado) return 'Jornada concluída!';
+    return _orientacoes[currentScene] ?? 'Jornada concluída!';
+  }
+
   GameProgress completeScene(int sceneIndex) {
     final updatedScenes = Map<String, bool>.from(completedScenes);
     updatedScenes['cena_$sceneIndex'] = true;
@@ -89,6 +109,15 @@ class GameProgress {
       currentScene: nextScene,
       completedScenes: updatedScenes,
       updatedAt: DateTime.now(),
+    );
+  }
+
+  GameProgress finalizarJogo() {
+    return GameProgress(
+      currentScene: currentScene,
+      completedScenes: completedScenes,
+      updatedAt: DateTime.now(),
+      jogoFinalizado: true,
     );
   }
 }
