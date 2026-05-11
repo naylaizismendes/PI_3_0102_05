@@ -24,7 +24,7 @@ class _CampanhaScreenState extends State<CampanhaScreen> with SingleTickerProvid
   final FirestoreService _firestoreService = FirestoreService();
   Position? _posicao;
   String? _erro;
-  bool _carregando = false;
+
   late Future<List<Ambiente>> _futureAmbientes;
   GameProgress _gameProgress = GameProgress.initial();
   
@@ -91,7 +91,6 @@ class _CampanhaScreenState extends State<CampanhaScreen> with SingleTickerProvid
 
   Future<void> _iniciar() async {
     setState(() {
-      _carregando = true;
       _erro = null;
     });
 
@@ -100,8 +99,7 @@ class _CampanhaScreenState extends State<CampanhaScreen> with SingleTickerProvid
       
       if (permissaoAtual == LocationPermission.deniedForever) {
         setState(() {
-          _erro = 'Permissão negada permanentemente. Por favor, habilite nas configurações do app.';
-          _carregando = false;
+          _erro = 'Permissão negada permanentemente. Habilite a localização nas configurações do app.';
         });
         await Geolocator.openAppSettings();
         return;
@@ -109,10 +107,15 @@ class _CampanhaScreenState extends State<CampanhaScreen> with SingleTickerProvid
 
       if (permissaoAtual == LocationPermission.denied) {
         final novaPermissao = await _service.solicitarPermissao();
-        if (novaPermissao == LocationPermission.denied || novaPermissao == LocationPermission.deniedForever) {
+        if (novaPermissao == LocationPermission.deniedForever) {
           setState(() {
-            _erro = 'Permissão de localização necessária.';
-            _carregando = false;
+            _erro = 'Permissão negada permanentemente. Habilite a localização nas configurações do app.';
+          });
+          return;
+        }
+        if (novaPermissao == LocationPermission.denied) {
+          setState(() {
+            _erro = 'Permissão de localização necessária. Habilite nas configurações do app.';
           });
           return;
         }
@@ -129,7 +132,7 @@ class _CampanhaScreenState extends State<CampanhaScreen> with SingleTickerProvid
     } catch (e) {
       if (mounted) setState(() => _erro = e.toString());
     } finally {
-      if (mounted) setState(() => _carregando = false);
+      if (mounted) setState(() {});
     }
   }
 
@@ -403,45 +406,46 @@ class _CampanhaScreenState extends State<CampanhaScreen> with SingleTickerProvid
                   ),
           ),
           
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.only(left: 12, top: 12),
-              child: Align(
-                alignment: Alignment.topLeft,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF5C3A1E),
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: const [
-                      BoxShadow(color: Colors.black26, blurRadius: 6, offset: Offset(0, 3)),
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        _gameProgress.jogoFinalizado
-                            ? Icons.emoji_events_rounded
-                            : Icons.navigation_rounded,
-                        color: const Color(0xFFFFD6A5),
-                        size: 16,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        _gameProgress.orientacaoAtual,
-                        style: const TextStyle(
-                          color: Color(0xFFFFE8CC),
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
+          if (_erro == null && _posicao != null)
+            SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.only(left: 12, top: 12),
+                child: Align(
+                  alignment: Alignment.topLeft,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF5C3A1E),
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: const [
+                        BoxShadow(color: Colors.black26, blurRadius: 6, offset: Offset(0, 3)),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          _gameProgress.jogoFinalizado
+                              ? Icons.emoji_events_rounded
+                              : Icons.navigation_rounded,
+                          color: const Color(0xFFFFD6A5),
+                          size: 16,
                         ),
-                      ),
-                    ],
+                        const SizedBox(width: 8),
+                        Text(
+                          _gameProgress.orientacaoAtual,
+                          style: const TextStyle(
+                            color: Color(0xFFFFE8CC),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
 
           SafeArea(
             child: Align(
@@ -451,8 +455,7 @@ class _CampanhaScreenState extends State<CampanhaScreen> with SingleTickerProvid
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    if (_carregando)
-                      const CircularProgressIndicator(),
+
                     if (_erro != null)
                       Column(
                         children: [
@@ -466,9 +469,9 @@ class _CampanhaScreenState extends State<CampanhaScreen> with SingleTickerProvid
                           ),
                           const SizedBox(height: 8),
                           ElevatedButton.icon(
-                            onPressed: _iniciar,
-                            icon: const Icon(Icons.refresh, size: 18),
-                            label: const Text('Tentar novamente'),
+                            onPressed: () => Geolocator.openAppSettings(),
+                            icon: const Icon(Icons.settings, size: 18),
+                            label: const Text('Abrir Configurações'),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.white,
                               foregroundColor: Colors.red.shade900,
