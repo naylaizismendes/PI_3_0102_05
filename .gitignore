@@ -43,3 +43,7 @@ lib/generated_plugin_registrant.dart
 nao-subir/
 PRD.md
 .agents/
+
+# Claude
+.claude/
+CLAUDE.md
