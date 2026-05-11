@@ -403,6 +403,46 @@ class _CampanhaScreenState extends State<CampanhaScreen> with SingleTickerProvid
           ),
           
           SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.only(left: 12, top: 12),
+              child: Align(
+                alignment: Alignment.topLeft,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF5C3A1E),
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: const [
+                      BoxShadow(color: Colors.black26, blurRadius: 6, offset: Offset(0, 3)),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        _gameProgress.jogoFinalizado
+                            ? Icons.emoji_events_rounded
+                            : Icons.navigation_rounded,
+                        color: const Color(0xFFFFD6A5),
+                        size: 16,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        _gameProgress.orientacaoAtual,
+                        style: const TextStyle(
+                          color: Color(0xFFFFE8CC),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          SafeArea(
             child: Align(
               alignment: Alignment.topCenter,
               child: Padding(
