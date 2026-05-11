@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'localizacao_screen.dart';
 import 'ambientes_screen.dart';
 import '../services/firestore_service.dart';
+import '../services/auth_service.dart';
 import 'campanha_screen.dart';
 import '../services/audio_service.dart';
 
@@ -14,6 +15,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final FirestoreService _firestoreService = FirestoreService();
+  final AuthService _authService = AuthService();
 
   String statusFirebase = 'Testando conexão com Firebase...';
 
@@ -43,6 +45,19 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       // Fundo com gradiente suave em tons pastéis inspirados no mapa
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout_rounded, color: Color(0xFF4A4E69)),
+            tooltip: 'Sair',
+            onPressed: () async {
+              await _authService.signOut();
+            },
+          ),
+        ],
+      ),
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(

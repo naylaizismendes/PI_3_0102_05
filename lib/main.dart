@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'screens/home_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'firebase_options.dart';
+import 'screens/home_screen.dart';
+import 'screens/login_screen.dart';
 
-/// Inicializa Flutter + Firebase antes de abrir o app
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -14,7 +15,6 @@ void main() async {
   runApp(const RpgMobileApp());
 }
 
-/// Widget raiz do aplicativo. Define tema e a tela inicial.
 class RpgMobileApp extends StatelessWidget {
   const RpgMobileApp({super.key});
 
@@ -30,7 +30,29 @@ class RpgMobileApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      home: const HomeScreen(),
+      home: const _AuthWrapper(),
+    );
+  }
+}
+
+class _AuthWrapper extends StatelessWidget {
+  const _AuthWrapper();
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<User?>(
+      stream: FirebaseAuth.instance.authStateChanges(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+        if (snapshot.hasData) {
+          return const HomeScreen();
+        }
+        return const LoginScreen();
+      },
     );
   }
 }
