@@ -1,12 +1,15 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import '../services/localizacao_service.dart';
+import '../services/firestore_service.dart';
 import '../services/audio_service.dart';
 import '../models/ambiente.dart';
+import '../models/game_progress.dart';
 import 'ambiente_detalhe_screen.dart';
 
 class CampanhaScreen extends StatefulWidget {
@@ -18,10 +21,12 @@ class CampanhaScreen extends StatefulWidget {
 
 class _CampanhaScreenState extends State<CampanhaScreen> with SingleTickerProviderStateMixin {
   final LocalizacaoService _service = LocalizacaoService();
+  final FirestoreService _firestoreService = FirestoreService();
   Position? _posicao;
   String? _erro;
   bool _carregando = false;
   late Future<List<Ambiente>> _futureAmbientes;
+  GameProgress _gameProgress = GameProgress.initial();
   
   AnimationController? _animController;
   Animation<double>? _bounceAnimation;
@@ -52,6 +57,7 @@ class _CampanhaScreenState extends State<CampanhaScreen> with SingleTickerProvid
     );
 
     _futureAmbientes = _carregarAmbientes();
+    _carregarProgresso();
     WidgetsBinding.instance.addPostFrameCallback((_) => _iniciar());
   }
 
@@ -59,6 +65,20 @@ class _CampanhaScreenState extends State<CampanhaScreen> with SingleTickerProvid
     final jsonString = await rootBundle.loadString('assets/data/ambientes.json');
     final jsonList = jsonDecode(jsonString) as List;
     return jsonList.map((j) => Ambiente.fromJson(j)).toList();
+  }
+
+
+  Future<void> _carregarProgresso() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    try {
+      final progress = await _firestoreService.getProgress(user.uid);
+      if (mounted) {
+        setState(() => _gameProgress = progress);
+      }
+    } catch (_) {
+    }
   }
 
   @override
@@ -218,10 +238,12 @@ class _CampanhaScreenState extends State<CampanhaScreen> with SingleTickerProvid
                               final ambientes = snapshot.data!;
                               return MarkerLayer(
                                 markers: ambientes.map((ambiente) {
-                                  bool podeEntrar = false;
+                                  final desbloqueado = _gameProgress.isEnvironmentUnlocked(ambiente.id);
+
+                                  bool dentroDoPoligono = false;
                                   if (_posicao != null) {
                                     if (ambiente.poligono.length >= 3) {
-                                      podeEntrar = _service.isPontoDentroDoPoligono(_posicao!, ambiente.poligono);
+                                      dentroDoPoligono = _service.isPontoDentroDoPoligono(_posicao!, ambiente.poligono);
                                     } else {
                                       final dist = _service.distanciaEmMetros(
                                         lat1: _posicao!.latitude,
@@ -229,9 +251,12 @@ class _CampanhaScreenState extends State<CampanhaScreen> with SingleTickerProvid
                                         lat2: ambiente.centro.latitude,
                                         lon2: ambiente.centro.longitude,
                                       );
-                                      podeEntrar = dist <= ambiente.raioMetros;
+                                      dentroDoPoligono = dist <= ambiente.raioMetros;
                                     }
                                   }
+
+
+                                  final bool podeEntrar = desbloqueado && dentroDoPoligono;
 
                                   return Marker(
                                     point: ambiente.centro,
@@ -249,6 +274,7 @@ class _CampanhaScreenState extends State<CampanhaScreen> with SingleTickerProvid
                                             builder: (_) => AmbienteDetalheScreen(
                                               ambiente: ambiente,
                                               posicaoAtual: _posicao,
+                                              desbloqueado: desbloqueado,
                                             ),
                                           ),
                                         );
@@ -260,7 +286,11 @@ class _CampanhaScreenState extends State<CampanhaScreen> with SingleTickerProvid
                                             width: 80,
                                             height: 40,
                                             decoration: BoxDecoration(
-                                              color: podeEntrar ? const Color(0xFF2D6A4F) : Colors.white.withOpacity(0.9),
+                                              color: !desbloqueado
+                                                ? Colors.grey.shade700
+                                                : podeEntrar
+                                                  ? const Color(0xFF2D6A4F)
+                                                  : Colors.white.withOpacity(0.9),
                                               borderRadius: BorderRadius.circular(12),
                                               border: Border.all(
                                                 color: podeEntrar ? Colors.white : const Color(0xFF4A4E69), 
@@ -271,16 +301,33 @@ class _CampanhaScreenState extends State<CampanhaScreen> with SingleTickerProvid
                                               ],
                                             ),
                                             alignment: Alignment.center,
-                                            child: Text(
-                                              ambiente.nome,
-                                              style: TextStyle(
-                                                color: podeEntrar ? Colors.white : const Color(0xFF4A4E69),
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 12,
-                                              ),
-                                              textAlign: TextAlign.center,
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
+                                            child: Row(
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                if (!desbloqueado)
+                                                  const Padding(
+                                                    padding: EdgeInsets.only(right: 4),
+                                                    child: Icon(Icons.lock, size: 12, color: Colors.white70),
+                                                  ),
+                                                Flexible(
+                                                  child: Text(
+                                                    ambiente.nome,
+                                                    style: TextStyle(
+                                                      color: !desbloqueado
+                                                        ? Colors.white70
+                                                        : podeEntrar
+                                                          ? Colors.white
+                                                          : const Color(0xFF4A4E69),
+                                                      fontWeight: FontWeight.bold,
+                                                      fontSize: 11,
+                                                    ),
+                                                    textAlign: TextAlign.center,
+                                                    maxLines: 1,
+                                                    overflow: TextOverflow.ellipsis,
+                                                  ),
+                                                ),
+                                              ],
                                             ),
                                           ),
                                           // Setinha apontando para baixo usando um container rotacionado
@@ -292,7 +339,11 @@ class _CampanhaScreenState extends State<CampanhaScreen> with SingleTickerProvid
                                                 width: 12,
                                                 height: 12,
                                                 decoration: BoxDecoration(
-                                                  color: podeEntrar ? const Color(0xFF2D6A4F) : Colors.white.withOpacity(0.9),
+                                                  color: !desbloqueado
+                                                    ? Colors.grey.shade700
+                                                    : podeEntrar
+                                                      ? const Color(0xFF2D6A4F)
+                                                      : Colors.white.withOpacity(0.9),
                                                   border: Border(
                                                     bottom: BorderSide(
                                                       color: podeEntrar ? Colors.white : const Color(0xFF4A4E69), 

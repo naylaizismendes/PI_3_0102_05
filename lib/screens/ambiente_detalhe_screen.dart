@@ -7,11 +7,13 @@ import '../services/localizacao_service.dart';
 class AmbienteDetalheScreen extends StatelessWidget {
   final Ambiente ambiente;
   final Position? posicaoAtual;
+  final bool desbloqueado;
 
   const AmbienteDetalheScreen({
     super.key, 
     required this.ambiente,
     this.posicaoAtual,
+    this.desbloqueado = false,
   });
 
   @override
@@ -37,7 +39,7 @@ class AmbienteDetalheScreen extends StatelessWidget {
     Color corBotao = const Color(0xFF2D6A4F);
     bool podeEntrar = true;
 
-    if (!ambiente.desbloqueado) {
+    if (!desbloqueado) {
       textoBotao = 'Bloqueado pela Narrativa';
       corBotao = Colors.grey.shade600;
       podeEntrar = false;

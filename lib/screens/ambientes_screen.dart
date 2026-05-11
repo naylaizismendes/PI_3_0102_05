@@ -1,9 +1,12 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:geolocator/geolocator.dart';
 import '../models/ambiente.dart';
+import '../models/game_progress.dart';
 import '../services/localizacao_service.dart';
+import '../services/firestore_service.dart';
 import '../services/audio_service.dart';
 import 'ambiente_detalhe_screen.dart';
 
@@ -34,9 +37,20 @@ class _AmbientesScreenState extends State<AmbientesScreen> {
 
     final pos = await _service.obterUltimaPosicaoSalva();
 
+
+    GameProgress progress = GameProgress.initial();
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      try {
+        progress = await FirestoreService().getProgress(user.uid);
+      } catch (_) {
+      }
+    }
+
     return {
       'ambientes': ambientesCarregados,
       'posicao': pos,
+      'progress': progress,
     };
   }
 
@@ -89,6 +103,7 @@ class _AmbientesScreenState extends State<AmbientesScreen> {
 
               final ambientes = snapshot.data!['ambientes'] as List<Ambiente>;
               final posicaoAtual = snapshot.data!['posicao'] as Position?;
+              final progress = snapshot.data!['progress'] as GameProgress;
 
               return ListView.separated(
                 padding: const EdgeInsets.all(16),
@@ -96,10 +111,12 @@ class _AmbientesScreenState extends State<AmbientesScreen> {
                 separatorBuilder: (_, __) => const SizedBox(height: 16),
                 itemBuilder: (context, index) {
                   final ambiente = ambientes[index];
+                  final desbloqueado = progress.isEnvironmentUnlocked(ambiente.id);
                   return _AmbienteCard(
                     ambiente: ambiente,
                     posicaoAtual: posicaoAtual,
                     service: _service,
+                    desbloqueado: desbloqueado,
                   );
                 },
               );
@@ -115,11 +132,13 @@ class _AmbienteCard extends StatelessWidget {
   final Ambiente ambiente;
   final Position? posicaoAtual;
   final LocalizacaoService service;
+  final bool desbloqueado;
 
   const _AmbienteCard({
     required this.ambiente,
     required this.posicaoAtual,
     required this.service,
+    required this.desbloqueado,
   });
 
   @override
@@ -152,6 +171,7 @@ class _AmbienteCard extends StatelessWidget {
             builder: (context) => AmbienteDetalheScreen(
               ambiente: ambiente,
               posicaoAtual: posicaoAtual,
+              desbloqueado: desbloqueado,
             ),
           ),
         );
