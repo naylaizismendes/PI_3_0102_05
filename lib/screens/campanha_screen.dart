@@ -38,8 +38,8 @@ class _CampanhaScreenState extends State<CampanhaScreen> with SingleTickerProvid
   static const double _offsetLng =  -0.000040;  // Ajuste inicial estimado para o Leste
 
   final LatLngBounds _limitesMapa = LatLngBounds(
-    LatLng(-22.834790669949925 + _offsetLat, -47.05333005212148 + _offsetLng), // Sudoeste
-    LatLng(-22.83179896419191 + _offsetLat, -47.05132320737695 + _offsetLng), // Nordeste
+    const LatLng(-22.834790669949925 + _offsetLat, -47.05333005212148 + _offsetLng),
+    const LatLng(-22.83179896419191 + _offsetLat, -47.05132320737695 + _offsetLng),
   );
 
   @override
@@ -275,6 +275,7 @@ class _CampanhaScreenState extends State<CampanhaScreen> with SingleTickerProvid
                                               ambiente: ambiente,
                                               posicaoAtual: _posicao,
                                               desbloqueado: desbloqueado,
+                                              gameProgress: _gameProgress,
                                             ),
                                           ),
                                         );
@@ -290,7 +291,7 @@ class _CampanhaScreenState extends State<CampanhaScreen> with SingleTickerProvid
                                                 ? Colors.grey.shade700
                                                 : podeEntrar
                                                   ? const Color(0xFF2D6A4F)
-                                                  : Colors.white.withOpacity(0.9),
+                                                  : Colors.white.withValues(alpha: 0.9),
                                               borderRadius: BorderRadius.circular(12),
                                               border: Border.all(
                                                 color: podeEntrar ? Colors.white : const Color(0xFF4A4E69), 
@@ -343,7 +344,7 @@ class _CampanhaScreenState extends State<CampanhaScreen> with SingleTickerProvid
                                                     ? Colors.grey.shade700
                                                     : podeEntrar
                                                       ? const Color(0xFF2D6A4F)
-                                                      : Colors.white.withOpacity(0.9),
+                                                      : Colors.white.withValues(alpha: 0.9),
                                                   border: Border(
                                                     bottom: BorderSide(
                                                       color: podeEntrar ? Colors.white : const Color(0xFF4A4E69), 

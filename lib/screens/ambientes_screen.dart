@@ -117,6 +117,7 @@ class _AmbientesScreenState extends State<AmbientesScreen> {
                     posicaoAtual: posicaoAtual,
                     service: _service,
                     desbloqueado: desbloqueado,
+                    gameProgress: progress,
                   );
                 },
               );
@@ -133,12 +134,14 @@ class _AmbienteCard extends StatelessWidget {
   final Position? posicaoAtual;
   final LocalizacaoService service;
   final bool desbloqueado;
+  final GameProgress gameProgress;
 
   const _AmbienteCard({
     required this.ambiente,
     required this.posicaoAtual,
     required this.service,
     required this.desbloqueado,
+    required this.gameProgress,
   });
 
   @override
@@ -158,7 +161,7 @@ class _AmbienteCard extends StatelessWidget {
         dentroDaArea = service.isPontoDentroDoPoligono(posicaoAtual!, ambiente.poligono);
       } else {
         // Fallback legado para os que ainda usam ponto central + raio
-        dentroDaArea = distancia! <= ambiente.raioMetros;
+        dentroDaArea = distancia <= ambiente.raioMetros;
       }
     }
 
@@ -172,13 +175,14 @@ class _AmbienteCard extends StatelessWidget {
               ambiente: ambiente,
               posicaoAtual: posicaoAtual,
               desbloqueado: desbloqueado,
+              gameProgress: gameProgress,
             ),
           ),
         );
       },
       child: Container(
         decoration: BoxDecoration(
-          color: dentroDaArea ? Colors.white : Colors.white.withOpacity(0.7),
+          color: dentroDaArea ? Colors.white : Colors.white.withValues(alpha: 0.7),
           borderRadius: BorderRadius.circular(20),
           border: dentroDaArea
               ? Border.all(color: const Color(0xFF2D6A4F), width: 2)
@@ -186,13 +190,13 @@ class _AmbienteCard extends StatelessWidget {
           boxShadow: [
             if (dentroDaArea)
               BoxShadow(
-                color: const Color(0xFF2D6A4F).withOpacity(0.4),
+                color: const Color(0xFF2D6A4F).withValues(alpha: 0.4),
                 blurRadius: 15,
                 spreadRadius: 2,
               )
             else
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withValues(alpha: 0.05),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -242,7 +246,7 @@ class _AmbienteCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.5),
+                color: Colors.white.withValues(alpha: 0.5),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Column(

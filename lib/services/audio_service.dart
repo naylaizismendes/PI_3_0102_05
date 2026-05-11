@@ -7,14 +7,13 @@ class AudioService with WidgetsBindingObserver {
   AudioService._internal() {
     WidgetsBinding.instance.addObserver(this);
     
-    // Configurar o AudioContext manualmente para as plataformas
     AudioPlayer.global.setAudioContext(AudioContext(
       android: const AudioContextAndroid(
         isSpeakerphoneOn: true,
         stayAwake: true,
         contentType: AndroidContentType.music,
         usageType: AndroidUsageType.media,
-        audioFocus: AndroidAudioFocus.none, // Fundamental para não parar a música
+        audioFocus: AndroidAudioFocus.none,
       ),
       iOS: AudioContextIOS(
         category: AVAudioSessionCategory.playback,
@@ -44,20 +43,17 @@ class AudioService with WidgetsBindingObserver {
   bool _isBgmPlaying = false;
 
   Future<void> playGlobalBgm() async {
-    if (_isBgmPlaying) return; // Não reinicia a música se já estiver tocando
+    if (_isBgmPlaying) return;
     
     await _bgmPlayer.setReleaseMode(ReleaseMode.loop);
-    await _bgmPlayer.setVolume(0.7); // Volume (70%)
+    await _bgmPlayer.setVolume(0.7);
     
     try {
       await _bgmPlayer.play(AssetSource('audio/menu music.mp3'));
       _isBgmPlaying = true;
-    } catch (e) {
-      print('Erro ao tocar BGM Global: $e');
-    }
+    } catch (_) {}
   }
 
-  // Mantemos as funções antigas apontando para a nova, para não quebrar as telas existentes
   Future<void> playMenuBgm() async => playGlobalBgm();
   Future<void> playMapBgm() async => playGlobalBgm();
 
@@ -69,16 +65,12 @@ class AudioService with WidgetsBindingObserver {
   Future<void> playClickSfx() async {
     try {
       await _sfxPlayer.play(AssetSource('audio/buttom click.mp3'));
-    } catch (e) {
-      print('Erro ao tocar SFX: $e');
-    }
+    } catch (_) {}
   }
 
   Future<void> playBackSfx() async {
     try {
       await _sfxPlayer.play(AssetSource('audio/click voltar.mp3'));
-    } catch (e) {
-      print('Erro ao tocar SFX (Voltar): $e');
-    }
+    } catch (_) {}
   }
 }
