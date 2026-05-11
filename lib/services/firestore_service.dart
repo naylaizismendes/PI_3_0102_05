@@ -16,7 +16,12 @@ class FirestoreService {
       return initial;
     }
 
-    return GameProgress.fromFirestore(doc.data()!);
+    final progress = GameProgress.fromFirestore(doc.data()!);
+    final raw = doc.data()!;
+    if (!raw.containsKey('cenaAtual') || !raw.containsKey('avaliacoes')) {
+      await _jogadores.doc(uid).set(progress.toFirestore());
+    }
+    return progress;
   }
 
   Stream<GameProgress> watchProgress(String uid) {
@@ -28,14 +33,39 @@ class FirestoreService {
     });
   }
 
-  Future<GameProgress> completeScene(String uid, int sceneIndex) async {
-    final current = await getProgress(uid);
-    final updated = current.completeScene(sceneIndex);
-    await _jogadores.doc(uid).set(updated.toFirestore());
-    return updated;
+  Future<GameProgress> completarCena(String uid, int indiceCena) async {
+    final atual = await getProgress(uid);
+    final atualizado = atual.completarCena(indiceCena);
+    await _jogadores.doc(uid).set(atualizado.toFirestore());
+    return atualizado;
   }
 
-  Future<void> initializePlayer(String uid) async {
+  Future<GameProgress> salvarAvaliacao(
+    String uid,
+    String tipoProva,
+    Avaliacao avaliacao,
+  ) async {
+    final atual = await getProgress(uid);
+    final atualizado = atual.registrarAvaliacao(tipoProva, avaliacao);
+    await _jogadores.doc(uid).set(atualizado.toFirestore());
+    return atualizado;
+  }
+
+  Future<GameProgress> concederBencao(String uid, String nomeBencao) async {
+    final atual = await getProgress(uid);
+    final atualizado = atual.concederBencao(nomeBencao);
+    await _jogadores.doc(uid).set(atualizado.toFirestore());
+    return atualizado;
+  }
+
+  Future<GameProgress> finalizarJogo(String uid) async {
+    final atual = await getProgress(uid);
+    final atualizado = atual.finalizarJogo();
+    await _jogadores.doc(uid).set(atualizado.toFirestore());
+    return atualizado;
+  }
+
+  Future<void> inicializarJogador(String uid) async {
     final doc = await _jogadores.doc(uid).get();
     if (!doc.exists) {
       final initial = GameProgress.initial();
@@ -43,7 +73,7 @@ class FirestoreService {
     }
   }
 
-  Future<void> resetProgress(String uid) async {
+  Future<void> resetarProgresso(String uid) async {
     final initial = GameProgress.initial();
     await _jogadores.doc(uid).set(initial.toFirestore());
   }

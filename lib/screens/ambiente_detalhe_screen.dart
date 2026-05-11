@@ -1,19 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import '../models/ambiente.dart';
+import '../models/game_progress.dart';
 import '../services/audio_service.dart';
 import '../services/localizacao_service.dart';
+import 'descanso_screen.dart';
 
 class AmbienteDetalheScreen extends StatelessWidget {
   final Ambiente ambiente;
   final Position? posicaoAtual;
   final bool desbloqueado;
+  final GameProgress gameProgress;
 
   const AmbienteDetalheScreen({
-    super.key, 
+    super.key,
     required this.ambiente,
     this.posicaoAtual,
     this.desbloqueado = false,
+    required this.gameProgress,
   });
 
   @override
@@ -89,11 +93,11 @@ class AmbienteDetalheScreen extends StatelessWidget {
               children: [
                 Container(
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.85),
+                    color: Colors.white.withValues(alpha: 0.85),
                     borderRadius: BorderRadius.circular(24),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
+                        color: Colors.black.withValues(alpha: 0.05),
                         blurRadius: 15,
                         offset: const Offset(0, 5),
                       ),
@@ -143,7 +147,7 @@ class AmbienteDetalheScreen extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 16, vertical: 12),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.5),
+                          color: Colors.white.withValues(alpha: 0.5),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Column(
@@ -167,18 +171,12 @@ class AmbienteDetalheScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 24),
-                      // Botão de Interação
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
                           onPressed: podeEntrar ? () {
                             AudioService().playClickSfx();
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Entrando em ${ambiente.nome}... (Em breve)'),
-                                backgroundColor: const Color(0xFF2D6A4F),
-                              ),
-                            );
+                            _entrarNoAmbiente(context);
                           } : null,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: corBotao,
@@ -208,5 +206,29 @@ class AmbienteDetalheScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void _entrarNoAmbiente(BuildContext context) {
+    // BYPASS TEMPORÁRIO: Remover quando as telas de narrativa estiverem prontas.
+    // Quando implementado, descomentar o bloco abaixo e remover o redirecionamento forçado.
+    //
+    // final ativo = gameProgress.isAmbienteAtivo(ambiente.id);
+    // if (ativo) {
+    //   // Navegar para a tela de narrativa do ambiente
+    //   return;
+    // }
+
+    final bg = gameProgress.backgroundDoAmbiente(ambiente.id);
+    if (bg != null) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => DescansoScreen(
+            nomeAmbiente: ambiente.nome,
+            backgroundAsset: bg,
+          ),
+        ),
+      );
+    }
   }
 }
