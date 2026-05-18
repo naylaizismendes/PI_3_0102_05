@@ -30,5 +30,6 @@ flutter:
     - assets/images/
     - assets/images/ambients/
     - assets/images/jogador/
+    - assets/images/npcs/
     - assets/data/
     - assets/audio/

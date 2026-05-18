@@ -4,6 +4,8 @@ import '../models/ambiente.dart';
 import '../models/game_progress.dart';
 import '../services/audio_service.dart';
 import '../services/localizacao_service.dart';
+import '../data/cenas_data.dart';
+import 'cena_screen.dart';
 import 'descanso_screen.dart';
 
 class AmbienteDetalheScreen extends StatelessWidget {
@@ -209,18 +211,26 @@ class AmbienteDetalheScreen extends StatelessWidget {
   }
 
   void _entrarNoAmbiente(BuildContext context) {
-    // BYPASS TEMPORÁRIO: Remover quando as telas de narrativa estiverem prontas.
-    // Quando implementado, descomentar o bloco abaixo e remover o redirecionamento forçado.
-    //
-    // final ativo = gameProgress.isAmbienteAtivo(ambiente.id);
-    // if (ativo) {
-    //   // Navegar para a tela de narrativa do ambiente
-    //   return;
-    // }
+    final ativo = gameProgress.isAmbienteAtivo(ambiente.id);
+    if (ativo) {
+      final cenaData = CenasData.getCena(gameProgress.cenaAtual);
+      if (cenaData != null) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => CenaScreen(
+              cena: cenaData,
+              gameProgress: gameProgress,
+            ),
+          ),
+        );
+        return;
+      }
+    }
 
     final bg = gameProgress.backgroundDoAmbiente(ambiente.id);
     if (bg != null) {
-      Navigator.push(
+      Navigator.pushReplacement(
         context,
         MaterialPageRoute(
           builder: (_) => DescansoScreen(

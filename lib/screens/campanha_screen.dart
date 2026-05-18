@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -27,6 +28,7 @@ class _CampanhaScreenState extends State<CampanhaScreen> with SingleTickerProvid
 
   late Future<List<Ambiente>> _futureAmbientes;
   GameProgress _gameProgress = GameProgress.initial();
+  StreamSubscription<GameProgress>? _progressSubscription;
   
   AnimationController? _animController;
   Animation<double>? _bounceAnimation;
@@ -67,22 +69,25 @@ class _CampanhaScreenState extends State<CampanhaScreen> with SingleTickerProvid
     return jsonList.map((j) => Ambiente.fromJson(j)).toList();
   }
 
-
-  Future<void> _carregarProgresso() async {
+  void _carregarProgresso() {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
 
-    try {
-      final progress = await _firestoreService.getProgress(user.uid);
-      if (mounted) {
-        setState(() => _gameProgress = progress);
-      }
-    } catch (_) {
-    }
+    _progressSubscription = _firestoreService.watchProgress(user.uid).listen(
+      (progress) {
+        if (mounted) {
+          setState(() => _gameProgress = progress);
+        }
+      },
+      onError: (e) {
+        debugPrint("Erro no stream de progresso: $e");
+      },
+    );
   }
 
   @override
   void dispose() {
+    _progressSubscription?.cancel();
     _animController?.dispose();
     _service.pararMonitoramento();
     // A música agora é global e contínua, não para aqui.
@@ -499,6 +504,55 @@ class _CampanhaScreenState extends State<CampanhaScreen> with SingleTickerProvid
               ),
             ),
           ),
+          
+          if (_gameProgress.jogoFinalizado)
+            Container(
+              color: Colors.black.withValues(alpha: 0.8),
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      _gameProgress.jogoVencido ? 'VITÓRIA!' : 'DERROTA',
+                      style: TextStyle(
+                        fontSize: 48,
+                        fontWeight: FontWeight.bold,
+                        color: _gameProgress.jogoVencido ? Colors.greenAccent : Colors.redAccent,
+                        letterSpacing: 4.0,
+                        shadows: [
+                          Shadow(
+                            color: _gameProgress.jogoVencido ? Colors.green.withValues(alpha: 0.5) : Colors.red.withValues(alpha: 0.5),
+                            blurRadius: 20,
+                          )
+                        ]
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF5C3A1E),
+                        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                      ),
+                      onPressed: () async {
+                        final user = FirebaseAuth.instance.currentUser;
+                        if (user != null) {
+                          await _firestoreService.resetarProgresso(user.uid);
+                        }
+                      },
+                      child: const Text(
+                        'JOGAR NOVAMENTE',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
         ],
       ),
     );

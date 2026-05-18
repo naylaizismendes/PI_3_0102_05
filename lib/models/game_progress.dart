@@ -79,7 +79,6 @@ class Bencaos {
 
 class GameProgress {
   final int cenaAtual;
-  final Map<String, bool> cenasCompletas;
   final DateTime? atualizadoEm;
   final bool jogoFinalizado;
   final Bencaos bencaos;
@@ -87,7 +86,6 @@ class GameProgress {
 
   const GameProgress({
     required this.cenaAtual,
-    required this.cenasCompletas,
     this.atualizadoEm,
     this.jogoFinalizado = false,
     this.bencaos = const Bencaos(),
@@ -97,16 +95,6 @@ class GameProgress {
   factory GameProgress.initial() {
     return const GameProgress(
       cenaAtual: 1,
-      cenasCompletas: {
-        'cena_1': false,
-        'cena_2': false,
-        'cena_3': false,
-        'cena_4': false,
-        'cena_5': false,
-        'cena_6': false,
-        'cena_7': false,
-        'cena_8': false,
-      },
       avaliacoes: {
         'primeiraProva': Avaliacao(),
         'provaFinal': Avaliacao(),
@@ -116,14 +104,6 @@ class GameProgress {
   }
 
   factory GameProgress.fromFirestore(Map<String, dynamic> data) {
-    final rawCenas = (data['cenasCompletas'] ?? data['completedScenes'])
-        as Map<String, dynamic>? ?? {};
-    final cenas = <String, bool>{};
-    for (int i = 1; i <= 8; i++) {
-      final key = 'cena_$i';
-      cenas[key] = rawCenas[key] == true;
-    }
-
     final rawAvaliacoes = data['avaliacoes'] as Map<String, dynamic>? ?? {};
     final avaliacoes = <String, Avaliacao>{};
     for (final tipo in ['primeiraProva', 'provaFinal', 'recuperacao']) {
@@ -135,7 +115,6 @@ class GameProgress {
 
     return GameProgress(
       cenaAtual: ((data['cenaAtual'] ?? data['currentScene']) as num?)?.toInt() ?? 1,
-      cenasCompletas: cenas,
       atualizadoEm: ((data['atualizadoEm'] ?? data['updatedAt']) as Timestamp?)?.toDate(),
       jogoFinalizado: data['jogoFinalizado'] == true,
       bencaos: rawBencaos != null ? Bencaos.fromMap(rawBencaos) : const Bencaos(),
@@ -146,7 +125,6 @@ class GameProgress {
   Map<String, dynamic> toFirestore() {
     return {
       'cenaAtual': cenaAtual,
-      'cenasCompletas': cenasCompletas,
       'atualizadoEm': FieldValue.serverTimestamp(),
       'jogoFinalizado': jogoFinalizado,
       'bencaos': bencaos.toMap(),
@@ -154,8 +132,21 @@ class GameProgress {
     };
   }
 
+  bool get jogoVencido {
+    if (!jogoFinalizado) return false;
+    final recup = avaliacoes['recuperacao'];
+    if (recup != null && recup.completada) {
+      return recup.aprovado;
+    }
+    final finalTest = avaliacoes['provaFinal'];
+    if (finalTest != null && finalTest.completada) {
+      return finalTest.aprovado;
+    }
+    return false;
+  }
+
   bool cenaCompletada(int indiceCena) {
-    return cenasCompletas['cena_$indiceCena'] == true;
+    return cenaAtual > indiceCena;
   }
 
   static const Map<String, int?> _unlockRequirements = {
@@ -188,7 +179,7 @@ class GameProgress {
   bool isEnvironmentUnlocked(String ambienteId) {
     final requirement = _unlockRequirements[ambienteId];
     if (requirement == null) return true;
-    return cenaCompletada(requirement);
+    return cenaAtual > requirement;
   }
 
   bool isAmbienteAtivo(String ambienteId) {
@@ -226,19 +217,27 @@ class GameProgress {
   }
 
   GameProgress completarCena(int indiceCena) {
-    final cenasAtualizadas = Map<String, bool>.from(cenasCompletas);
-    cenasAtualizadas['cena_$indiceCena'] = true;
-
     int proximaCena = cenaAtual;
-    if (indiceCena >= cenaAtual && indiceCena < 8) {
-      proximaCena = indiceCena + 1;
+    bool proximoJogoFinalizado = jogoFinalizado;
+
+    if (indiceCena == cenaAtual) {
+      if (indiceCena == 7) {
+         if (recuperacaoNecessaria) {
+            proximaCena = 8;
+         } else {
+            proximoJogoFinalizado = true;
+         }
+      } else if (indiceCena == 8) {
+         proximoJogoFinalizado = true;
+      } else {
+         proximaCena = indiceCena + 1;
+      }
     }
 
     return GameProgress(
       cenaAtual: proximaCena,
-      cenasCompletas: cenasAtualizadas,
       atualizadoEm: DateTime.now(),
-      jogoFinalizado: jogoFinalizado,
+      jogoFinalizado: proximoJogoFinalizado,
       bencaos: bencaos,
       avaliacoes: avaliacoes,
     );
@@ -250,7 +249,6 @@ class GameProgress {
 
     return GameProgress(
       cenaAtual: cenaAtual,
-      cenasCompletas: cenasCompletas,
       atualizadoEm: DateTime.now(),
       jogoFinalizado: jogoFinalizado,
       bencaos: bencaos,
@@ -261,7 +259,6 @@ class GameProgress {
   GameProgress concederBencao(String nome) {
     return GameProgress(
       cenaAtual: cenaAtual,
-      cenasCompletas: cenasCompletas,
       atualizadoEm: DateTime.now(),
       jogoFinalizado: jogoFinalizado,
       bencaos: bencaos.conceder(nome),
@@ -272,7 +269,6 @@ class GameProgress {
   GameProgress finalizarJogo() {
     return GameProgress(
       cenaAtual: cenaAtual,
-      cenasCompletas: cenasCompletas,
       atualizadoEm: DateTime.now(),
       jogoFinalizado: true,
       bencaos: bencaos,
