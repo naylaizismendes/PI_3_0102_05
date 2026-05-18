@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -20,12 +21,14 @@ class AmbientesScreen extends StatefulWidget {
 class _AmbientesScreenState extends State<AmbientesScreen> {
   final LocalizacaoService _service = LocalizacaoService();
   late Future<Map<String, dynamic>> _futureDados;
+  StreamSubscription<GameProgress>? _progressSubscription;
+  GameProgress _progress = GameProgress.initial();
 
   @override
   void initState() {
     super.initState();
-    // Inicia o Future uma única vez no ciclo de vida do widget, evitando múltiplas requisições em rebuilds (Aula 9)
     _futureDados = _carregarDados();
+    _carregarProgresso();
   }
 
   Future<Map<String, dynamic>> _carregarDados() async {
@@ -37,21 +40,29 @@ class _AmbientesScreenState extends State<AmbientesScreen> {
 
     final pos = await _service.obterUltimaPosicaoSalva();
 
-
-    GameProgress progress = GameProgress.initial();
-    final user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      try {
-        progress = await FirestoreService().getProgress(user.uid);
-      } catch (_) {
-      }
-    }
-
     return {
       'ambientes': ambientesCarregados,
       'posicao': pos,
-      'progress': progress,
     };
+  }
+
+  void _carregarProgresso() {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      _progressSubscription = FirestoreService().watchProgress(user.uid).listen((p) {
+        if (mounted) {
+          setState(() {
+            _progress = p;
+          });
+        }
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _progressSubscription?.cancel();
+    super.dispose();
   }
 
   @override
@@ -103,7 +114,6 @@ class _AmbientesScreenState extends State<AmbientesScreen> {
 
               final ambientes = snapshot.data!['ambientes'] as List<Ambiente>;
               final posicaoAtual = snapshot.data!['posicao'] as Position?;
-              final progress = snapshot.data!['progress'] as GameProgress;
 
               return ListView.separated(
                 padding: const EdgeInsets.all(16),
@@ -111,13 +121,13 @@ class _AmbientesScreenState extends State<AmbientesScreen> {
                 separatorBuilder: (_, __) => const SizedBox(height: 16),
                 itemBuilder: (context, index) {
                   final ambiente = ambientes[index];
-                  final desbloqueado = progress.isEnvironmentUnlocked(ambiente.id);
+                  final desbloqueado = _progress.isEnvironmentUnlocked(ambiente.id);
                   return _AmbienteCard(
                     ambiente: ambiente,
                     posicaoAtual: posicaoAtual,
                     service: _service,
                     desbloqueado: desbloqueado,
-                    gameProgress: progress,
+                    gameProgress: _progress,
                   );
                 },
               );

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/audio_service.dart';
 
-class DescansoScreen extends StatelessWidget {
+class DescansoScreen extends StatefulWidget {
   final String nomeAmbiente;
   final String backgroundAsset;
 
@@ -10,6 +10,24 @@ class DescansoScreen extends StatelessWidget {
     required this.nomeAmbiente,
     required this.backgroundAsset,
   });
+
+  @override
+  State<DescansoScreen> createState() => _DescansoScreenState();
+}
+
+class _DescansoScreenState extends State<DescansoScreen> {
+
+  @override
+  void initState() {
+    super.initState();
+    AudioService().pauseBgm();
+  }
+
+  @override
+  void dispose() {
+    AudioService().resumeBgm();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +41,7 @@ class DescansoScreen extends StatelessWidget {
           fit: StackFit.expand,
           children: [
             Image.asset(
-              backgroundAsset,
+              widget.backgroundAsset,
               fit: BoxFit.cover,
               errorBuilder: (_, __, ___) => Container(
                 color: const Color(0xFF1A1A2E),
@@ -48,7 +66,7 @@ class DescansoScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
-                          nomeAmbiente,
+                          widget.nomeAmbiente,
                           style: const TextStyle(
                             color: Color(0xFFFFE8CC),
                             fontWeight: FontWeight.bold,

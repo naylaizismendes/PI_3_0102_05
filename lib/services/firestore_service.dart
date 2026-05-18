@@ -65,6 +65,10 @@ class FirestoreService {
     return atualizado;
   }
 
+  Future<void> saveProgress(String uid, GameProgress progress) async {
+    await _jogadores.doc(uid).set(progress.toFirestore());
+  }
+
   Future<void> inicializarJogador(String uid) async {
     final doc = await _jogadores.doc(uid).get();
     if (!doc.exists) {
